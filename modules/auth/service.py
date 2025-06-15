@@ -31,41 +31,57 @@ class AuthService(IAuthService):
             'constants',
             'querys',
         )
+        self.path_init_table = os.path.join(self.sql_path, 'init', 'table_users.sql')
+        self.querys = {}
+        self._querys()
+
+    def _querys(self):
+        """
+        Carrega os arquivos SQL necessários para a autenticação.
+        """
+        path_folder = os.path.join(self.sql_path, 'users')
+        files = os.listdir(path_folder)
+        for file in files:
+            if file.endswith('.sql'):
+                query_name = file.replace('.sql', '')
+                path_file = os.path.join(path_folder, file)
+                with open(path_file, 'r', encoding='utf-8') as f:
+                    self.querys[query_name] = f.read()
 
     def _ensure_users_table(self):
-        with open(os.path.join(self.sql_path,'init','table_users.sql'), 'r', encoding='utf-8') as f:
+        """
+        Garante que a tabela 'users' exista no banco de dados.
+        Se não existir, cria a tabela usando o script SQL localizado em path_init_table.
+        """
+        # Retorna ao início da transação
+        self.db_manager.connection.rollback()
+        # Tenta criar a tabela de usuários se não existir
+        with open(self.path_init_table, 'r', encoding='utf-8') as f:
             self.db_manager.execute_raw(f.read())
-            print("Tabela 'users' criada com sucesso.")
-
-    def _query_valid(self):
-        with open(os.path.join(self.sql_path,'users','valid.sql'), 'r', encoding='utf-8') as f:
-            sql = f.read()
-        return sql
 
     def authenticate(self, username: str, password: str) -> bool:
         """
         Autentica o usuário consultando o banco de dados.
         """
         try:
-            result = self.db_manager.read(self._query_valid(), (username, password))
+            result = self.db_manager.read(self.querys["valid_login"], (username, password))
             return bool(result)
         except UndefinedTable:
-            self.db_manager.connection.rollback()
+            # Se a tabela não existir, tenta criá-la
             self._ensure_users_table()
-            result = self.db_manager.read(self._query_valid(), (username, password))
+            # Tenta autenticar novamente após criar a tabela
+            result = self.db_manager.read(self.querys["valid_login"], (username, password))
             return bool(result)
         except Exception as e:
-            raise Exception(f"Erro ao autenticar usuário: {e}")
+            raise RuntimeError(f"Erro ao autenticar usuário: {e}") from e
 
     def create_user(self, username: str, password: str) -> bool:
         """
         Cria um novo usuário no banco de dados. Retorna True se criado, False se já existe.
         """
         # Verifica se já existe
-        query_check = "SELECT 1 FROM users WHERE username = %s LIMIT 1"
-        if self.db_manager.read(query_check, (username,)):
-            return False'
+        if self.db_manager.read(self.querys["check_user"], (username,)):
+            return False
         # Cria usuário
-        query_insert = "INSERT INTO users (username, password) VALUES (%s, %s)"
-        self.db_manager.create(query_insert, (username, password))
+        self.db_manager.create(self.querys["inser_user"], (username, password))
         return True

@@ -1,20 +1,9 @@
 # controller.py
 from flask import Blueprint, request, jsonify, render_template
 from .service import AuthService
-from modules.database.database_manager import DatabaseManager
-from modules.database.postgres_connection import PostgresConnection
-from modules.config import config
+from . import db_manager
 
-# Instancia conexão real com banco
-postgres_conn = PostgresConnection(
-    host=config["DB_HOST"],
-    database=config["DB_NAME"],
-    user=config["DB_USER"],
-    password=config["DB_PASSWORD"],
-    port=config["DB_PORT"]
-)
-postgres_conn.connect()
-db_manager = DatabaseManager(postgres_conn)
+# Iniciando Autenticação e Cadastro de Usuários
 auth_service = AuthService(db_manager)
 
 auth_bp = Blueprint('auth', __name__)
@@ -42,6 +31,20 @@ def login():
 
 @auth_bp.route('/cadastrar-usuario', methods=['GET', 'POST'])
 def cadastrar_usuario():
+    """
+    Handles user registration requests.
+
+    - For GET requests, renders the user registration HTML page.
+    - For POST requests (expects JSON), attempts to create a new user with the 
+    provided username and password.
+        - Returns a success message and HTTP 201 if the user is created.
+        - Returns an error message and HTTP 409 if the user already exists.
+        - Returns an error message and HTTP 400 if username or password is missing.
+        - Returns an error message and HTTP 500 for unexpected exceptions.
+
+    Returns:
+        Flask Response: Rendered HTML template or JSON response with success/error message.
+    """
     if request.method == 'GET':
         return render_template('cadastro/user.html')
     data = request.get_json()

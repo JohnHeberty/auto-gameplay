@@ -2,9 +2,10 @@
 
 from .idatabase_connection import IDatabaseConnection
 from typing import Any, List, Tuple, Optional  # pylint: disable=C0411
-import psycopg2
+from ..singleton import Singleton  # pylint: disable=C0411
+import psycopg2 # pylint: disable=C0411
 
-class PostgresConnection(IDatabaseConnection):
+class PostgresConnection(IDatabaseConnection, metaclass=Singleton):
     """
     Classe para gerenciar a conexão com um banco de dados PostgreSQL.
     Métodos:
@@ -36,6 +37,7 @@ class PostgresConnection(IDatabaseConnection):
         rollback():
             Realiza o rollback da transação atual no banco de dados.
     """
+    
     def __init__(self, host: str, database: str, user: str, password: str, port: int = 5432):
         self.host = host
         self.database = database

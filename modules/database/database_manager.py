@@ -2,9 +2,9 @@
 
 from typing import Any, List, Tuple, Optional  # pylint: disable=C0411
 from .idatabase_connection import IDatabaseConnection
-from .postgres_connection import PostgresConnection
+from ..singleton import Singleton  # pylint: disable=C0411
 
-class DatabaseManager:
+class DatabaseManager(metaclass=Singleton):
     """
     DatabaseManager provides a high-level interface for performing CRUD 
     (Create, Read, Update, Delete) operations
@@ -28,6 +28,8 @@ class DatabaseManager:
             Executes a raw SQL query with the given parameters and commits the transaction.
     """
     def __init__(self, connection: IDatabaseConnection):  # pylint: disable=C0116
+        if not isinstance(connection, IDatabaseConnection):
+            raise TypeError("connection must implement IDatabaseConnection interface")
         self.connection = connection
 
     def create(self, query: str, params: Tuple[Any, ...]) -> None:  # pylint: disable=C0116
