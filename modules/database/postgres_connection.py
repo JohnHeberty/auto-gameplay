@@ -70,7 +70,7 @@ class PostgresConnection(IDatabaseConnection):
         if not self.cur:
             raise RuntimeError("Database connection is not established.")
         self.cur.executemany(query, params)
-        
+
     def fetchone(self) -> Optional[Tuple[Any, ...]]:  # pylint: disable=C0116
         return self.cur.fetchone() if self.cur else None
 

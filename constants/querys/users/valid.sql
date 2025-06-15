@@ -1,0 +1,1 @@
+SELECT 1 FROM users WHERE username = %s AND password = %s LIMIT 1

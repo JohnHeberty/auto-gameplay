@@ -48,7 +48,7 @@ class DatabaseManager:
         except Exception as e:
             self.connection.rollback()
             raise e
-        
+
     def read(self, query: str, params: Optional[Tuple[Any, ...]] = None) -> List[Tuple[Any, ...]]:  # pylint: disable=C0116
         self.connection.execute(query, params)
         return self.connection.fetchall()
