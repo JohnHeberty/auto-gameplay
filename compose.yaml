@@ -14,10 +14,11 @@ services:
       context: .
     env_file:
       - .env
-    # entrypoint: 
-    #   ["dockerize -wait tcp://db:5432 -timeout 10s"]
+    environment:
+      - PYTHONPATH=/app
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - 8000:8000
     volumes:
@@ -45,8 +46,8 @@ services:
       - app-network
     healthcheck:
       test: [ "CMD", "pg_isready" ]
-      interval: 10s
-      timeout: 5s
+      interval: 5s
+      timeout: 3s
       retries: 5
 
 networks:

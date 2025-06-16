@@ -59,4 +59,4 @@ USER appuser
 COPY . .
 
 # Run the application on port 8000
-CMD ["python", "main.py"]
+CMD ["sh", "-c", "python services/init_app/init_app.py && python main.py"]

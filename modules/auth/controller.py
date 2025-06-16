@@ -1,7 +1,7 @@
 # controller.py
 from flask import Blueprint, request, jsonify, render_template
 from .service import AuthService
-from . import db_manager
+from .. import db_manager
 
 # Iniciando Autenticação e Cadastro de Usuários
 auth_service = AuthService(db_manager)
