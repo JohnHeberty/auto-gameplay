@@ -35,7 +35,10 @@ def run_init_app():
         Exceptions are caught and printed for each SQL statement execution, but not propagated.
     """
     # Executa todos os arquivos .sql da pasta
-    sql_files = sorted(glob.glob(os.path.join(SQL_DIR, '*.sql')), key=lambda x: os.path.basename(x).split('_')[1].replace('.',''))
+    sql_files = sorted(
+        glob.glob(os.path.join(SQL_DIR, '*.sql')), 
+        key=lambda x: os.path.basename(x).split('_')[1].replace('.','')
+    )
     for sql_file in sql_files:
         with open(sql_file, 'r', encoding='utf-8') as f:
             sql_script = f.read()
