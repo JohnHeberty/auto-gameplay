@@ -7,7 +7,6 @@ pandas
 Jinja2
 typer
 flask
-demofile
-
+rarfile
 
 # loguru

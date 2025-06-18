@@ -1,5 +1,3 @@
----
-
 # 🎮 auto-gameplay
 
 ## 💡 IDEIA PRINCIPAL
@@ -32,7 +30,7 @@ Para **cada jogo** a ser abordado, a estrutura se repete com foco em monetizaç�
 
 ---
 
-### 🧠 Leitura de arquivos `.dem` com Python
+### 🧠 Leitura de arquivos `.dem` com Python CORREÇÃO COM Node.js
 
 Use a biblioteca [demofile](https://demofile.dev/):
 
@@ -124,5 +122,3 @@ java -jar output/combatlog.jar partida.dem
 ## 🧠 Dica Final
 
 > Automatize a extração dos dados, combine com IA para gerar resumos e narrações, e publique conteúdo segmentado e indexado para cada tipo de audiência. Monetize com vídeos, blogs e apps. 🚀
-
----
