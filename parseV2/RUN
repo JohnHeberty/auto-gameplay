@@ -1,9 +1,0 @@
-java -cp clarity.jar skadistats.clarity.examples.allchat.Main dota2_replay.dem chat.json
-java -cp clarity.jar skadistats.clarity.examples.combatlog.Main dota2_replay.dem combatlog.json
-java -cp clarity.jar skadistats.clarity.examples.matchend.Main dota2_replay.dem matchend.json
-
-
-
-# DOCKER
-docker run -v ${PWD}:/work -w /work openjdk:17 java -cp clarity.jar skadistats.clarity.examples.combatlog.Main dota2_replay.dem combatlog.json
-docker run -v ${PWD}:/work -w /work openjdk:17 java -cp clarity.jar skadistats.clarity.examples.combatlog.Main dota2_replay.dem combatlog.json

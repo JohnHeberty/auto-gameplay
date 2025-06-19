@@ -57,6 +57,7 @@ with open('exemplo.dem', 'rb') as f:
 
 ### 📦 Ferramentas recomendadas
 
+* [clarity](https://github.com/skadistats/clarity)
 * [clarity-analyzer](https://github.com/spheenik/clarity-analyzer): GUI para explorar `.dem` localmente.
 * [clarity-examples](https://github.com/skadistats/clarity-examples): gera `.jar` para extrair dados JSON de `.dem`.
 

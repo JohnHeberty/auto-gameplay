@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  parser:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: parser
+    ports:
+      - "5600:5600"
+    environment:
+      # Adicione variáveis de ambiente se necessário
+    # working_dir: /app  # Só use se for diferente do padrão do Dockerfile
+    # command: ["java", "-jar", "target/stats-0.1.0.jar", "5600"]  # Só use se quiser sobrescrever o CMD do Dockerfile
