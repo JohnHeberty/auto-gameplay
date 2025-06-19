@@ -1,0 +1,7 @@
+services:
+  clarity:
+    build:
+      context: .
+    volumes:
+      - ./src:/src       # ← bind direto!
+    container_name: clarity

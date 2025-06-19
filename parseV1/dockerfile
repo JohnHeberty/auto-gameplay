@@ -1,0 +1,16 @@
+# ----------  Fase 1: build  ----------
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
+
+WORKDIR /src
+RUN git clone https://github.com/odota/parser.git .
+# gera parser.jar em target/
+RUN mvn -q clean package -DskipTests
+
+# ----------  Fase 2: runtime ----------
+# imagem JRE oficial, sem Alpine
+FROM eclipse-temurin:17-jre-jammy               
+WORKDIR /opt/parser
+COPY --from=builder /src/target/*.jar ./parser.jar
+
+EXPOSE 5600
+CMD ["java","-jar","parser.jar"]

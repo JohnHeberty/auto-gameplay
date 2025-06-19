@@ -1,0 +1,8 @@
+services:
+  odota-parser:
+    build: .
+    image: odota/parser:latest
+    container_name: odota-parser
+    ports:
+      - "5600:5600"
+    restart: unless-stopped
