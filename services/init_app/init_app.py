@@ -2,6 +2,10 @@ import os
 
 # Adiciona o diretório raiz do projeto ao sys.path
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+print("ROOT__file__:", __file__)
+print("ROOT_DIR:", ROOT_DIR)
+
 os.chdir(ROOT_DIR)
 
 from modules.config import config

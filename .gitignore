@@ -194,3 +194,5 @@ cython_debug/
 .cursorindexingignore
 
 *.dem
+*.dem.bz2
+*.gz
