@@ -15,7 +15,7 @@ import glob
 # Caminho para os scripts SQL
 SQL_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-    'constants',
+    'repository',
     'querys',
     'init'
 )

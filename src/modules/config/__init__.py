@@ -14,3 +14,8 @@ config = {
     "DB_NAME":          os.getenv("DB_NAME",        "autogameplay"),
     "APP_PORT":         int(os.getenv("APP_PORT",   "8000"))
 }
+
+youtube = {
+    "API_KEY":          os.getenv("YOUTUBE_API_KEY", ""),
+    "CLIENT_SECRET":    os.getenv("CLIENT_SECRET", "")
+}

@@ -1,62 +1,8 @@
-# syntax=docker/dockerfile:1
+FROM apache/airflow:2.9.1-python3.10
 
-# Comments are provided throughout this file to help you get started.
-# If you need more help, visit the Dockerfile reference guide at
-# https://docs.docker.com/go/dockerfile-reference/
+# Copie seus DAGs e plugins se desejar
+# COPY dags/ /opt/airflow/dags/
+# COPY plugins/ /opt/airflow/plugins/
 
-# Want to help us make this template better? Share your feedback here: https://forms.gle/ybq9Krt8jtBL3iCk7
-
-ARG PYTHON_VERSION=3.10
-FROM python:${PYTHON_VERSION}-slim as base
-
-# Prevents Python from writing pyc files.
-ENV PYTHONDONTWRITEBYTECODE=1
-
-# Keeps Python from buffering stdout and stderr to avoid situations where
-# the application crashes without emitting any logs due to buffering.
-ENV PYTHONUNBUFFERED=1
-
-# Install Dockerize, a utility that allows us to wait for services to be available
-# ENV DOCKERIZE_VERSION v0.9.3
-# RUN apt-get update \
-#     && apt-get install -y wget \
-#     && wget -O - https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz | tar xzf - -C /usr/local/bin \
-#     && apt-get autoremove -yqq --purge wget && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-
-# Create a non-privileged user that the app will run under.
-# See https://docs.docker.com/go/dockerfile-user-best-practices/
-ARG UID=10001
-RUN adduser \
-    --disabled-password \
-    --gecos "" \
-    --home "/nonexistent" \
-    --shell "/sbin/nologin" \
-    --no-create-home \
-    --uid "${UID}" \
-    appuser
-
-# UPDATE PIP
-RUN python -m pip install --upgrade pip
-
-# Install system dependencies.
-# This is a multi-stage build, so we can install the dependencies in a separate
-RUN apt-get update && apt-get install -y gcc libpq-dev && rm -rf /var/lib/apt/lists/*
-
-# Download dependencies as a separate step to take advantage of Docker's caching.
-# Leverage a cache mount to /root/.cache/pip to speed up subsequent builds.
-# Leverage a bind mount to requirements.txt to avoid having to copy them into
-# into this layer.
-COPY requirements.txt .
-RUN --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=bind,source=requirements.txt,target=requirements.txt \
-    python -m pip install -r requirements.txt
-
-# Switch to the non-privileged user to run the application.
-USER appuser
-
-# Run the application on port 8000
-CMD ["sh", "-c", "python services/init_app/init_app.py && python main.py"]
-
-EXPOSE ${DB_PORT}
+# Instale dependências extras se necessário
+# RUN pip install --no-cache-dir <pacotes>
