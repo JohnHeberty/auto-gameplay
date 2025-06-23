@@ -3,8 +3,8 @@ import os
 # Adiciona o diretório raiz do projeto ao sys.path
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-print("ROOT__file__:", __file__)
-print("ROOT_DIR:", ROOT_DIR)
+print(f'ROOT__file__: {__file__}')
+print(f'ROOT_DIR: {ROOT_DIR}')
 
 os.chdir(ROOT_DIR)
 
@@ -13,12 +13,20 @@ from modules import db_manager
 import glob
 
 # Caminho para os scripts SQL
-SQL_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+SQL_DIR_CREATE = os.path.join(
+    ROOT_DIR,
     'repository',
     'querys',
-    'init'
+    'init',
+    'create'
 )
+SQL_DIR_INSERT = os.path.join(
+    ROOT_DIR,
+    'repository',
+    'querys',
+    'init',
+    'insert'
+)# src\repository\querys\init\insert
 
 def run_init_app():
     """
@@ -38,23 +46,27 @@ def run_init_app():
     Raises:
         Exceptions are caught and printed for each SQL statement execution, but not propagated.
     """
-    # Executa todos os arquivos .sql da pasta
-    sql_files = sorted(
-        glob.glob(os.path.join(SQL_DIR, '*.sql')), 
-        key=lambda x: os.path.basename(x).split('_')[1].replace('.','')
-    )
-    for sql_file in sql_files:
-        with open(sql_file, 'r', encoding='utf-8') as f:
-            sql_script = f.read()
-            # Divide por ";" para múltiplos comandos
-            for statement in filter(None, map(str.strip, sql_script.split(';'))):
-                if statement:
-                    try:
-                        print(f'Executado: {os.path.basename(sql_file)}')
-                        db_manager.execute_raw(statement)
-                    except Exception as e:
-                        print(f'Erro ao executar {os.path.basename(sql_file)}: {e}')
-                        db_manager.connection.rollback()
+    for sql_path in [SQL_DIR_CREATE, SQL_DIR_INSERT]:
+        # Executa todos os arquivos .sql da pasta
+        sql_files = sorted(
+            glob.glob(os.path.join(sql_path, '*.sql')),
+            key=lambda x: os.path.basename(x).split('_')[1].replace('.','')
+        )
+        for sql_file in sql_files:
+            if not os.path.isfile(sql_file):
+                print(f'Arquivo não encontrado: {sql_file}')
+                continue
+            with open(sql_file, 'r', encoding='utf-8') as f:
+                sql_script = f.read()
+                # Divide por ";" para múltiplos comandos
+                for statement in filter(None, map(str.strip, sql_script.split(';'))):
+                    if statement:
+                        try:
+                            print(f'Executado: {os.path.basename(sql_file)}')
+                            db_manager.execute_raw(statement)
+                        except Exception as e:
+                            print(f'Erro ao executar {os.path.basename(sql_file)}: {e}')
+                            db_manager.connection.rollback()
     db_manager.connection.close()
 
 if __name__ == '__main__':

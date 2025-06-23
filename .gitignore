@@ -195,4 +195,4 @@ cython_debug/
 
 *.dem
 *.dem.bz2
-*.gz
+# *.gz
