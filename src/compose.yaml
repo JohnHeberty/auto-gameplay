@@ -36,6 +36,7 @@ services:
     expose:
       - ${DB_PORT}
     volumes:
+      - ./data/DB/pgbackups:/backups
       - db-data:/var/lib/postgresql/data
     networks:
       - auto-gameplay
