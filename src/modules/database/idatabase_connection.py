@@ -37,7 +37,7 @@ class IDatabaseConnection:
         raise NotImplementedError
 
     @abstractmethod
-    def executemany(self):  # pylint: disable=C0116
+    def executemany(self, query: str, params: List[Tuple[Any, ...]]) -> None:  # pylint: disable=C0116
         raise NotImplementedError
 
     @abstractmethod
@@ -46,6 +46,11 @@ class IDatabaseConnection:
 
     @abstractmethod
     def fetchall(self) -> List[Tuple[Any, ...]]:  # pylint: disable=C0116
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_column_names(self) -> List[str]:  # pylint: disable=C0116
+        """Returns the column names from the last executed query."""
         raise NotImplementedError
 
     @abstractmethod

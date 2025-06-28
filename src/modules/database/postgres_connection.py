@@ -79,6 +79,12 @@ class PostgresConnection(IDatabaseConnection, metaclass=Singleton):
     def fetchall(self) -> List[Tuple[Any, ...]]:  # pylint: disable=C0116
         return self.cur.fetchall() if self.cur else []
 
+    def get_column_names(self) -> List[str]:  # pylint: disable=C0116
+        """Returns the column names from the last executed query."""
+        if self.cur and self.cur.description:
+            return [desc[0] for desc in self.cur.description]
+        return []
+
     def commit(self) -> None:  # pylint: disable=C0116
         if self.conn:
             self.conn.commit()
