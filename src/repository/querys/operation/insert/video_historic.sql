@@ -1,15 +1,31 @@
-INSERT INTO PLAYLIST_MOVIE (
+INSERT INTO PLAYLIST_MOVIE_HISTORIC (
     ID_MOVIE,
     TITLE,
     "description",
+    VIEWS,
     LIKES,
+    LIVE,
+    keywords,
+    available_countries,
+    CATEGORY,
+    FAMILY_FRIENDLY,
+    DT_UPLOAD,
+    DT_PUBLISH,
     DT_START,
-    DT_END,
+    DT_END
 ) VALUES (
     '{{ ID_MOVIE }}',
     '{{ TITLE }}',
     '{{ DESCRIPTION }}',
+    '{{ VIEWS }}',
     '{{ LIKES }}',
+    '{{ LIVE }}',
+    '{{ KEYWORDS }}',
+    '{{ AVAILABLE_COUNTRIES }}',
+    '{{ CATEGORY }}',
+    '{{ FAMILY_FRIENDLY }}',
+    '{{ DT_UPLOAD }}',
+    '{{ DT_PUBLISH }}',
     '{{ DT_START }}',
     '{{ DT_END }}'
 );

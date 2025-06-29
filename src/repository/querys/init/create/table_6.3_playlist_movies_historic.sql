@@ -2,7 +2,15 @@ CREATE TABLE IF NOT EXISTS PLAYLIST_MOVIE_HISTORIC (
     ID_MOVIE INTEGER NOT NULL,
     TITLE VARCHAR(50) NOT NULL,
     "description" VARCHAR(1000),
-    LIKES INTEGER NOT NULL,
+    VIEWS INTEGER,
+    LIKES INTEGER,
+    LIVE BOOLEAN,
+    keywords TEXT[], -- Array de palavras-chave
+    available_countries VARCHAR(2)[], -- Array de códigos de países (ISO 3166-1 alpha-2)
+    CATEGORY VARCHAR(50),
+    FAMILY_FRIENDLY BOOLEAN,
+    DT_UPLOAD DATE,
+    DT_PUBLISH DATE,
     DT_START DATE NOT NULL,
     DT_END DATE,
     CONSTRAINT fk_playlistmoviehistoric_movie FOREIGN KEY (ID_MOVIE) REFERENCES PLAYLIST_MOVIE(ID_MOVIE),
