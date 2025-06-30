@@ -14,18 +14,32 @@ INSERT INTO PLAYLIST_MOVIE_HISTORIC (
     DT_START,
     DT_END
 ) VALUES (
-    '{{ ID_MOVIE }}',
+    {{ ID_MOVIE }},
     '{{ TITLE }}',
     '{{ DESCRIPTION }}',
-    '{{ VIEWS }}',
-    '{{ LIKES }}',
-    '{{ LIVE }}',
-    '{{ KEYWORDS }}',
-    '{{ AVAILABLE_COUNTRIES }}',
+    {{ VIEWS }},
+    {{ LIKES }},
+    {{ LIVE }},
+    ARRAY[{{ KEYWORDS }}],
+    ARRAY[{{ AVAILABLE_COUNTRIES }}],
     '{{ CATEGORY }}',
     '{{ FAMILY_FRIENDLY }}',
     '{{ DT_UPLOAD }}',
     '{{ DT_PUBLISH }}',
     '{{ DT_START }}',
     '{{ DT_END }}'
-);
+)
+ON CONFLICT (ID_MOVIE, DT_END) DO UPDATE SET
+    TITLE = EXCLUDED.TITLE,
+    "description" = EXCLUDED."description",
+    VIEWS = EXCLUDED.VIEWS,
+    LIKES = EXCLUDED.LIKES,
+    LIVE = EXCLUDED.LIVE,
+    keywords = EXCLUDED.keywords,
+    available_countries = EXCLUDED.available_countries,
+    CATEGORY = EXCLUDED.CATEGORY,
+    FAMILY_FRIENDLY = EXCLUDED.FAMILY_FRIENDLY,
+    DT_UPLOAD = EXCLUDED.DT_UPLOAD,
+    DT_PUBLISH = EXCLUDED.DT_PUBLISH,
+    DT_START = EXCLUDED.DT_START,
+    DT_END = EXCLUDED.DT_END;

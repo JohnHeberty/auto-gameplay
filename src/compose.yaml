@@ -59,7 +59,7 @@ services:
       db:
         condition: service_healthy
     entrypoint: >
-      sh -c "apk add --no-cache gzip && while true; do PGPASSWORD=$$POSTGRES_PASSWORD pg_dump -h db -U $$POSTGRES_USER $$POSTGRES_DB | gzip > /backups/backup-\$(date +%Y-%m-%d).sql.gz; sleep 86400; done"
+      sh -c "apk add --no-cache gzip tar && while true; do PGPASSWORD=$$POSTGRES_PASSWORD pg_dump -h db -U $$POSTGRES_USER $$POSTGRES_DB > /tmp/backup-\$(date +%Y-%m-%d).sql && tar -czf /backups/backup-\$(date +%Y-%m-%d).tar.gz -C /tmp backup-\$(date +%Y-%m-%d).sql && rm /tmp/backup-\$(date +%Y-%m-%d).sql; sleep 86400; done"
     volumes:
       - ./data/DB/pgbackups:/backups
     networks:
