@@ -8,6 +8,8 @@ Jinja2
 typer
 rarfile
 yt-dlp
+tqdm
+ipywidgets
 
 # YOUTUBE API
 simple-youtube-api
