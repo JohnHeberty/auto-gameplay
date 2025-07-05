@@ -24,3 +24,18 @@ CREATE TABLE IF NOT EXISTS PROPLAYERS_HEROES_BUILD (
     CONSTRAINT fk_phb_item9 FOREIGN KEY (ID_ITEM_9) REFERENCES ITENS(ID_ITEM),
     PRIMARY KEY (ID_PROPLAYER, ID_HERO)
 );
+
+-- Comentários nas colunas
+COMMENT ON TABLE PROPLAYERS_HEROES_BUILD IS                 'Tabela para armazenar builds (configurações de itens) dos jogadores profissionais para heróis específicos';
+COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_PROPLAYER IS   'ID do jogador profissional (referência à tabela PROPLAYERS)';
+COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_HERO IS        'ID do herói/personagem (referência à tabela HEROES)';
+COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_1 IS      'ID do primeiro item da build (referência à tabela ITENS)';
+COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_2 IS      'ID do segundo item da build (referência à tabela ITENS)';
+COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_3 IS      'ID do terceiro item da build (referência à tabela ITENS)';
+COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_4 IS      'ID do quarto item da build (referência à tabela ITENS)';
+COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_5 IS      'ID do quinto item da build (referência à tabela ITENS)';
+COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_6 IS      'ID do sexto item da build (referência à tabela ITENS)';
+COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_7 IS      'ID do sétimo item da build (referência à tabela ITENS)';
+COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_8 IS      'ID do oitavo item da build (referência à tabela ITENS)';
+COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_9 IS      'ID do nono item da build (referência à tabela ITENS)';
+COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.REGISTER_DATE IS  'Data de registro da build do jogador para o herói';
