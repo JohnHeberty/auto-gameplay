@@ -65,7 +65,8 @@ class ZipExtractor:
             str: The path to the directory where files were extracted.
 
         Raises:
-            ValueError: If the source file does not have a .zip extension or is not a valid zip file.
+            ValueError: If the source file does not have a .zip extension or is not 
+            a valid zip file.
         """
         if not zipfile.is_zipfile(self.source_path):
             raise ValueError("O arquivo não é um .zip válido.")
