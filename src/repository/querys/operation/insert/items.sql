@@ -1,0 +1,33 @@
+INSERT INTO ITENS (
+    ID_ITEM,
+    "name",
+    DNAME, 
+    IMG, 
+    QUAL, 
+    COST,
+    DMG_TYPE,
+    NOTES,
+    MC,
+    HC,
+    CD,
+    LORE,
+    CREATED,
+    CHARGES,
+    ID_GAME
+) VALUES (
+    {{ ID_ITEM }}, 
+    '{{ NAME }}', 
+    '{{ DNAME }}', 
+    '{{ IMG }}', 
+    '{{ QUAL }}', 
+    {{ COST }},
+    '{{ DMG_TYPE }}',
+    '{{ NOTES }}',
+    {{ MC }},
+    {{ HC }},
+    {{ CD }},
+    '{{ LORE }}',
+    {{ CREATED }},
+    {{ CHARGES }},
+    {{ ID_GAME }}
+);
