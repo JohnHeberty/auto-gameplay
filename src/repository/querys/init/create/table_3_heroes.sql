@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS HEROES (
     PRIMARY_ATTR VARCHAR(3),
     ATTACK_TYPE VARCHAR(6),
     ROLES TEXT[],
+    IMG VARCHAR(70),
+    ICON VARCHAR(70);
     BASE_HEALTH INTEGER,
     BASE_HEALTH_REGEN FLOAT,
     BASE_MANA INTEGER,
@@ -46,6 +48,8 @@ COMMENT ON COLUMN HEROES."description" IS       'Descrição do herói, suas hab
 COMMENT ON COLUMN HEROES.PRIMARY_ATTR IS        'Atributo primário do herói (STR, AGI, INT)';
 COMMENT ON COLUMN HEROES.ATTACK_TYPE IS         'Tipo de ataque do herói (Melee, Ranged)';
 COMMENT ON COLUMN HEROES.ROLES IS               'Array de funções/roles do herói (Carry, Support, etc.)';
+COMMENT ON COLUMN HEROES.IMG IS                 'URL ou caminho da imagem principal do herói';
+COMMENT ON COLUMN HEROES.ICON IS                'URL ou caminho do ícone do herói';
 COMMENT ON COLUMN HEROES.BASE_HEALTH IS         'Pontos de vida base do herói';
 COMMENT ON COLUMN HEROES.BASE_HEALTH_REGEN IS   'Regeneração de vida base por segundo';
 COMMENT ON COLUMN HEROES.BASE_MANA IS           'Pontos de mana base do herói';
@@ -73,5 +77,4 @@ COMMENT ON COLUMN HEROES.DAY_VISION IS          'Alcance de visão durante o dia
 COMMENT ON COLUMN HEROES.NIGHT_VISION IS        'Alcance de visão durante a noite';
 COMMENT ON COLUMN HEROES.LOCALIZED_NAME IS      'Nome localizado/traduzido do herói';
 COMMENT ON COLUMN HEROES.REGISTER_DATE IS       'Timestamp de criação do registro';
-
 
