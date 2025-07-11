@@ -10,6 +10,7 @@ rarfile
 yt-dlp
 tqdm
 ipywidgets
+lxml
 
 # YOUTUBE API
 simple-youtube-api
