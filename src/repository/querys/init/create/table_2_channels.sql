@@ -29,3 +29,23 @@ COMMENT ON COLUMN CHANNEL.ID_GAME IS                'ID do jogo principal associ
 COMMENT ON COLUMN CHANNEL.COUNTRY IS                'País de origem do canal';
 COMMENT ON COLUMN CHANNEL.REGISTER_DATE IS          'Data de registro do canal no sistema';
 COMMENT ON COLUMN CHANNEL.MY_CHANNEL IS             'Indica se é um canal próprio/gerenciado pelo usuário';
+
+-- =====================================================================================
+-- ÍNDICES DE PERFORMANCE PARA CHANNEL
+-- =====================================================================================
+
+-- Índice para filtros por jogo
+CREATE INDEX IF NOT EXISTS idx_channel_id_game 
+ON CHANNEL (ID_GAME);
+
+-- Índice para consultas por país
+CREATE INDEX IF NOT EXISTS idx_channel_country 
+ON CHANNEL (COUNTRY);
+
+-- Índice para filtros por canais próprios
+CREATE INDEX IF NOT EXISTS idx_channel_my_channel 
+ON CHANNEL (MY_CHANNEL);
+
+-- Índice para busca no título do canal
+CREATE INDEX IF NOT EXISTS idx_channel_title_text 
+ON CHANNEL USING gin(to_tsvector('english', TITLE));

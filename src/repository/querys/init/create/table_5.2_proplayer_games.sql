@@ -12,3 +12,11 @@ COMMENT ON TABLE PROPLAYERS_GAMES IS                'Tabela de relacionamento en
 COMMENT ON COLUMN PROPLAYERS_GAMES.ID_PROPLAYER IS  'ID do jogador profissional (referência à tabela PROPLAYERS)';
 COMMENT ON COLUMN PROPLAYERS_GAMES.ID_GAME IS       'ID do jogo (referência à tabela GAMES)';
 COMMENT ON COLUMN PROPLAYERS_GAMES.REGISTER_DATE IS 'Data de registro da associação do jogador com o jogo';
+
+-- =====================================================================================
+-- ÍNDICES DE PERFORMANCE PARA PROPLAYERS_GAMES
+-- =====================================================================================
+
+-- Índice para consultas por jogador
+CREATE INDEX IF NOT EXISTS idx_proplayers_games_id_proplayer 
+ON PROPLAYERS_GAMES (ID_PROPLAYER) WHERE ID_PROPLAYER IS NOT NULL;

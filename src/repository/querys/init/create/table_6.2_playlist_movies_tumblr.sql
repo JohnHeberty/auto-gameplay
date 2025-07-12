@@ -14,3 +14,19 @@ COMMENT ON COLUMN PLAYLIST_MOVIE_TUMBLR.HASH_TUMBLR IS      'Hash SHA-256 da thu
 COMMENT ON COLUMN PLAYLIST_MOVIE_TUMBLR.TUMBLR IS           'Dados binários da thumbnail (imagem em formato BYTEA)';
 COMMENT ON COLUMN PLAYLIST_MOVIE_TUMBLR.REGISTER_DATE IS    'Data de registro da thumbnail no sistema';
 
+-- =====================================================================================
+-- ÍNDICES DE PERFORMANCE PARA PLAYLIST_MOVIE_TUMBLR
+-- =====================================================================================
+
+-- Índice para consultas por vídeo (encontrar thumbnails de um vídeo específico)
+CREATE INDEX IF NOT EXISTS idx_playlist_movie_tumblr_id_movie 
+ON PLAYLIST_MOVIE_TUMBLR (ID_MOVIE) WHERE ID_MOVIE IS NOT NULL;
+
+-- Índice para ordenação por data de registro
+CREATE INDEX IF NOT EXISTS idx_playlist_movie_tumblr_register_date 
+ON PLAYLIST_MOVIE_TUMBLR (REGISTER_DATE) WHERE REGISTER_DATE IS NOT NULL;
+
+-- Índice composto para consultas por vídeo e data
+CREATE INDEX IF NOT EXISTS idx_playlist_movie_tumblr_movie_date 
+ON PLAYLIST_MOVIE_TUMBLR (ID_MOVIE, REGISTER_DATE) WHERE ID_MOVIE IS NOT NULL AND REGISTER_DATE IS NOT NULL;
+

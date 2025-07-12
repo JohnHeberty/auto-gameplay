@@ -24,3 +24,27 @@ COMMENT ON COLUMN PLAYLIST_MOVIE.ID_PROPLAYER IS    'ID do jogador profissional 
 COMMENT ON COLUMN PLAYLIST_MOVIE.ID_HERO IS         'ID do herói/personagem (se aplicável)';
 COMMENT ON COLUMN PLAYLIST_MOVIE.REGISTER_DATE IS   'Data de registro no sistema';
 
+-- =====================================================================================
+-- ÍNDICES DE PERFORMANCE PARA PLAYLIST_MOVIE
+-- =====================================================================================
+
+-- Índice para JOIN com playlist_movie_historic
+CREATE INDEX IF NOT EXISTS idx_playlist_movie_id_movie 
+ON PLAYLIST_MOVIE (ID_MOVIE);
+
+-- Índice para JOIN com playlists
+CREATE INDEX IF NOT EXISTS idx_playlist_movie_id_playlist 
+ON PLAYLIST_MOVIE (ID_PLAYLIST);
+
+-- Índice composto para filtros por jogo, herói e jogador
+CREATE INDEX IF NOT EXISTS idx_playlist_movie_game_hero_player 
+ON PLAYLIST_MOVIE (ID_GAME, ID_HERO, ID_PROPLAYER);
+
+-- Índice para consultas por data de registro
+CREATE INDEX IF NOT EXISTS idx_playlist_movie_register_date 
+ON PLAYLIST_MOVIE (REGISTER_DATE DESC);
+
+-- Índice único para ID_VIDEO (reforça performance da constraint UNIQUE)
+CREATE INDEX IF NOT EXISTS idx_playlist_movie_id_video 
+ON PLAYLIST_MOVIE (ID_VIDEO);
+

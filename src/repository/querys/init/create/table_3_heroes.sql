@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS HEROES (
     ATTACK_TYPE VARCHAR(6),
     ROLES TEXT[],
     IMG VARCHAR(70),
-    ICON VARCHAR(70);
+    ICON VARCHAR(70),
     BASE_HEALTH INTEGER,
     BASE_HEALTH_REGEN FLOAT,
     BASE_MANA INTEGER,
@@ -77,4 +77,41 @@ COMMENT ON COLUMN HEROES.DAY_VISION IS          'Alcance de visão durante o dia
 COMMENT ON COLUMN HEROES.NIGHT_VISION IS        'Alcance de visão durante a noite';
 COMMENT ON COLUMN HEROES.LOCALIZED_NAME IS      'Nome localizado/traduzido do herói';
 COMMENT ON COLUMN HEROES.REGISTER_DATE IS       'Timestamp de criação do registro';
+
+-- =====================================================================================
+-- ÍNDICES DE PERFORMANCE PARA HEROES
+-- =====================================================================================
+
+-- Índice para busca por nome localizado (muito usado na detecção)
+CREATE INDEX IF NOT EXISTS idx_heroes_localized_name_lower 
+ON HEROES (LOWER(LOCALIZED_NAME));
+
+-- Índice para busca por nome limpo (sem prefixo)
+CREATE INDEX IF NOT EXISTS idx_heroes_name_clean 
+ON HEROES (LOWER(REPLACE(REPLACE(name, 'npc_dota_hero_', ''), '_', ' ')));
+
+-- Índice para busca de texto em nome e nome localizado
+CREATE INDEX IF NOT EXISTS idx_heroes_name_text 
+ON HEROES USING gin(to_tsvector('english', LOCALIZED_NAME || ' ' || name));
+
+-- Índice para filtros por jogo
+CREATE INDEX IF NOT EXISTS idx_heroes_id_game 
+ON HEROES (ID_GAME);
+
+-- Índice para consultas por atributo primário
+CREATE INDEX IF NOT EXISTS idx_heroes_primary_attr 
+ON HEROES (PRIMARY_ATTR);
+
+-- Índice GIN para busca em roles de heróis
+CREATE INDEX IF NOT EXISTS idx_heroes_roles 
+ON HEROES USING gin(ROLES);
+
+-- Índice para heróis ativos no Captain's Mode
+CREATE INDEX IF NOT EXISTS idx_active_heroes 
+ON HEROES (ID_HERO, LOCALIZED_NAME) 
+WHERE CM_ENABLED = true;
+
+-- Aumentar estatísticas para coluna de texto
+ALTER TABLE HEROES 
+ALTER COLUMN localized_name SET STATISTICS 1000;
 

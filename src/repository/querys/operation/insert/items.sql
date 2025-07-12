@@ -1,4 +1,4 @@
-INSERT INTO ITENS (
+INSERT INTO ITEMS (
     ID_ITEM,
     "name",
     DNAME, 

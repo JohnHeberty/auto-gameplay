@@ -18,3 +18,27 @@ COMMENT ON COLUMN PLAYLIST.ID_GAME IS       'ID do jogo relacionado à playlist 
 COMMENT ON COLUMN PLAYLIST.TITLE IS         'Título da playlist';
 COMMENT ON COLUMN PLAYLIST."description" IS 'Descrição da playlist (opcional)';
 COMMENT ON COLUMN PLAYLIST.REGISTER_DATE IS 'Data de registro da playlist no sistema';
+
+-- =====================================================================================
+-- ÍNDICES DE PERFORMANCE PARA PLAYLIST
+-- =====================================================================================
+
+-- Índice para JOIN com channels
+CREATE INDEX IF NOT EXISTS idx_playlist_id_youtube 
+ON PLAYLIST (ID_YOUTUBE);
+
+-- Índice para filtros por jogo
+CREATE INDEX IF NOT EXISTS idx_playlist_id_game 
+ON PLAYLIST (ID_GAME);
+
+-- Índice para busca no título da playlist (usado na detecção de heróis)
+CREATE INDEX IF NOT EXISTS idx_playlist_title_text 
+ON PLAYLIST USING gin(to_tsvector('english', TITLE));
+
+-- Índice para consultas por data de registro
+CREATE INDEX IF NOT EXISTS idx_playlist_register_date 
+ON PLAYLIST (REGISTER_DATE DESC);
+
+-- Aumentar estatísticas para coluna de texto
+ALTER TABLE PLAYLIST 
+ALTER COLUMN title SET STATISTICS 1000;

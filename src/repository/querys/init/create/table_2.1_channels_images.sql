@@ -14,3 +14,10 @@ COMMENT ON COLUMN CHANNEL_IMAGES.LOGO IS        'Dados binários da logo/avatar 
 COMMENT ON COLUMN CHANNEL_IMAGES.BANNER IS      'Dados binários do banner/capa do canal em formato BYTEA';
 COMMENT ON COLUMN CHANNEL_IMAGES.VANITY IS      'Dados binários da imagem de vanity/miniatura do canal em formato BYTEA';
 
+-- =====================================================================================
+-- ÍNDICES DE PERFORMANCE PARA CHANNEL_IMAGES
+-- =====================================================================================
+
+-- Nota: Esta tabela tem relacionamento 1:1 com CHANNEL, então a chave primária ID_YOUTUBE
+-- já fornece acesso direto. Índices adicionais em campos BYTEA não são eficientes.
+-- A busca principal será sempre por ID_YOUTUBE que já é indexado como PK.

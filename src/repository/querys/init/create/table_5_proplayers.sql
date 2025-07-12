@@ -11,6 +11,18 @@ CREATE TABLE IF NOT EXISTS PROPLAYERS (
 COMMENT ON TABLE PROPLAYERS IS                  'Tabela para armazenar informações dos jogadores profissionais';
 COMMENT ON COLUMN PROPLAYERS.ID_PROPLAYER IS    'ID único do jogador profissional (auto-incremento)';
 COMMENT ON COLUMN PROPLAYERS.ID_ACCOUNT IS      'ID da conta associada ao jogador profissional';
-COMMENT ON COLUMN PROPLAYERS.NOME IS            'Nome do jogador profissional';
+COMMENT ON COLUMN PROPLAYERS.NAME IS            'Nome do jogador profissional';
 COMMENT ON COLUMN PROPLAYERS.DESCRIPTION IS     'Descrição ou biografia do jogador profissional';
 COMMENT ON COLUMN PROPLAYERS.REGISTER_DATE IS   'Data de registro do jogador profissional no sistema';
+
+-- =====================================================================================
+-- ÍNDICES DE PERFORMANCE PARA PROPLAYERS
+-- =====================================================================================
+
+-- Índice para ID_ACCOUNT (usado em JOINs)
+CREATE INDEX IF NOT EXISTS idx_proplayers_id_account 
+ON PROPLAYERS (ID_ACCOUNT);
+
+-- Índice para busca por nome
+CREATE INDEX IF NOT EXISTS idx_proplayers_name_text 
+ON PROPLAYERS USING gin(to_tsvector('english', NAME));

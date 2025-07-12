@@ -13,15 +13,15 @@ CREATE TABLE IF NOT EXISTS PROPLAYERS_HEROES_BUILD (
     REGISTER_DATE DATE NOT NULL,
     CONSTRAINT fk_phb_proplayer FOREIGN KEY (ID_PROPLAYER) REFERENCES PROPLAYERS(ID_PROPLAYER),
     CONSTRAINT fk_phb_hero FOREIGN KEY (ID_HERO) REFERENCES HEROES(ID_HERO),
-    CONSTRAINT fk_phb_item1 FOREIGN KEY (ID_ITEM_1) REFERENCES ITENS(ID_ITEM),
-    CONSTRAINT fk_phb_item2 FOREIGN KEY (ID_ITEM_2) REFERENCES ITENS(ID_ITEM),
-    CONSTRAINT fk_phb_item3 FOREIGN KEY (ID_ITEM_3) REFERENCES ITENS(ID_ITEM),
-    CONSTRAINT fk_phb_item4 FOREIGN KEY (ID_ITEM_4) REFERENCES ITENS(ID_ITEM),
-    CONSTRAINT fk_phb_item5 FOREIGN KEY (ID_ITEM_5) REFERENCES ITENS(ID_ITEM),
-    CONSTRAINT fk_phb_item6 FOREIGN KEY (ID_ITEM_6) REFERENCES ITENS(ID_ITEM),
-    CONSTRAINT fk_phb_item7 FOREIGN KEY (ID_ITEM_7) REFERENCES ITENS(ID_ITEM),
-    CONSTRAINT fk_phb_item8 FOREIGN KEY (ID_ITEM_8) REFERENCES ITENS(ID_ITEM),
-    CONSTRAINT fk_phb_item9 FOREIGN KEY (ID_ITEM_9) REFERENCES ITENS(ID_ITEM),
+    CONSTRAINT fk_phb_item1 FOREIGN KEY (ID_ITEM_1) REFERENCES ITEMS(ID_ITEM),
+    CONSTRAINT fk_phb_item2 FOREIGN KEY (ID_ITEM_2) REFERENCES ITEMS(ID_ITEM),
+    CONSTRAINT fk_phb_item3 FOREIGN KEY (ID_ITEM_3) REFERENCES ITEMS(ID_ITEM),
+    CONSTRAINT fk_phb_item4 FOREIGN KEY (ID_ITEM_4) REFERENCES ITEMS(ID_ITEM),
+    CONSTRAINT fk_phb_item5 FOREIGN KEY (ID_ITEM_5) REFERENCES ITEMS(ID_ITEM),
+    CONSTRAINT fk_phb_item6 FOREIGN KEY (ID_ITEM_6) REFERENCES ITEMS(ID_ITEM),
+    CONSTRAINT fk_phb_item7 FOREIGN KEY (ID_ITEM_7) REFERENCES ITEMS(ID_ITEM),
+    CONSTRAINT fk_phb_item8 FOREIGN KEY (ID_ITEM_8) REFERENCES ITEMS(ID_ITEM),
+    CONSTRAINT fk_phb_item9 FOREIGN KEY (ID_ITEM_9) REFERENCES ITEMS(ID_ITEM),
     PRIMARY KEY (ID_PROPLAYER, ID_HERO)
 );
 
@@ -29,13 +29,33 @@ CREATE TABLE IF NOT EXISTS PROPLAYERS_HEROES_BUILD (
 COMMENT ON TABLE PROPLAYERS_HEROES_BUILD IS                 'Tabela para armazenar builds (configurações de itens) dos jogadores profissionais para heróis específicos';
 COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_PROPLAYER IS   'ID do jogador profissional (referência à tabela PROPLAYERS)';
 COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_HERO IS        'ID do herói/personagem (referência à tabela HEROES)';
-COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_1 IS      'ID do primeiro item da build (referência à tabela ITENS)';
-COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_2 IS      'ID do segundo item da build (referência à tabela ITENS)';
-COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_3 IS      'ID do terceiro item da build (referência à tabela ITENS)';
-COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_4 IS      'ID do quarto item da build (referência à tabela ITENS)';
-COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_5 IS      'ID do quinto item da build (referência à tabela ITENS)';
-COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_6 IS      'ID do sexto item da build (referência à tabela ITENS)';
-COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_7 IS      'ID do sétimo item da build (referência à tabela ITENS)';
-COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_8 IS      'ID do oitavo item da build (referência à tabela ITENS)';
-COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_9 IS      'ID do nono item da build (referência à tabela ITENS)';
+COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_1 IS      'ID do primeiro item da build (referência à tabela ITEMS)';
+COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_2 IS      'ID do segundo item da build (referência à tabela ITEMS)';
+COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_3 IS      'ID do terceiro item da build (referência à tabela ITEMS)';
+COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_4 IS      'ID do quarto item da build (referência à tabela ITEMS)';
+COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_5 IS      'ID do quinto item da build (referência à tabela ITEMS)';
+COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_6 IS      'ID do sexto item da build (referência à tabela ITEMS)';
+COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_7 IS      'ID do sétimo item da build (referência à tabela ITEMS)';
+COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_8 IS      'ID do oitavo item da build (referência à tabela ITEMS)';
+COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.ID_ITEM_9 IS      'ID do nono item da build (referência à tabela ITEMS)';
 COMMENT ON COLUMN PROPLAYERS_HEROES_BUILD.REGISTER_DATE IS  'Data de registro da build do jogador para o herói';
+
+-- =====================================================================================
+-- ÍNDICES DE PERFORMANCE PARA PROPLAYERS_HEROES_BUILD
+-- =====================================================================================
+
+-- Índice para consultas por jogador (para encontrar builds de um jogador)
+CREATE INDEX IF NOT EXISTS idx_proplayers_heroes_build_id_proplayer 
+ON PROPLAYERS_HEROES_BUILD (ID_PROPLAYER) WHERE ID_PROPLAYER IS NOT NULL;
+
+-- Índice para consultas por herói (para encontrar builds de um herói)
+CREATE INDEX IF NOT EXISTS idx_proplayers_heroes_build_id_hero 
+ON PROPLAYERS_HEROES_BUILD (ID_HERO) WHERE ID_HERO IS NOT NULL;
+
+-- Índice composto para consultas específicas por jogador e herói
+CREATE INDEX IF NOT EXISTS idx_proplayers_heroes_build_player_hero 
+ON PROPLAYERS_HEROES_BUILD (ID_PROPLAYER, ID_HERO) WHERE ID_PROPLAYER IS NOT NULL AND ID_HERO IS NOT NULL;
+
+-- Índice para ordenação por data
+CREATE INDEX IF NOT EXISTS idx_proplayers_heroes_build_register_date 
+ON PROPLAYERS_HEROES_BUILD (REGISTER_DATE) WHERE REGISTER_DATE IS NOT NULL;
