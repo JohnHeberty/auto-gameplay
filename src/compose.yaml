@@ -77,28 +77,28 @@ services:
       timeout: 3s
       retries: 5
 
-  # backup:
-  #   container_name: auto-gameplay-backup
-  #   image: postgres:alpine
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         memory: 128M
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     POSTGRES_DB: ${DB_NAME}
-  #     POSTGRES_USER: ${DB_USER}
-  #     POSTGRES_PASSWORD: ${DB_PASSWORD}
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #   entrypoint: >
-  #     sh -c "apk add --no-cache gzip tar && while true; do PGPASSWORD=$$POSTGRES_PASSWORD pg_dump -h db -U $$POSTGRES_USER $$POSTGRES_DB > /tmp/backup-\$(date +%Y-%m-%d).sql && tar -czf /backups/backup-\$(date +%Y-%m-%d).tar.gz -C /tmp backup-\$(date +%Y-%m-%d).sql && rm /tmp/backup-\$(date +%Y-%m-%d).sql; sleep 86400; done"
-  #   volumes:
-  #     - ./data/DB/pgbackups:/backups
-  #   networks:
-  #     - auto-gameplay
+  backup:
+    container_name: auto-gameplay-backup
+    image: postgres:alpine
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: >
+      sh -c "apk add --no-cache gzip tar && while true; do PGPASSWORD=$$POSTGRES_PASSWORD pg_dump -h db -U $$POSTGRES_USER $$POSTGRES_DB > /tmp/backup-\$(date +%Y-%m-%d).sql && tar -czf /backups/backup-\$(date +%Y-%m-%d).tar.gz -C /tmp backup-\$(date +%Y-%m-%d).sql && rm /tmp/backup-\$(date +%Y-%m-%d).sql; sleep 86400; done"
+    volumes:
+      - ./data/DB/pgbackups:/backups
+    networks:
+      - auto-gameplay
 
 networks:
   auto-gameplay:

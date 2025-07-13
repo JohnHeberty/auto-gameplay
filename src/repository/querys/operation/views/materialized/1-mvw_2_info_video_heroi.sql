@@ -28,7 +28,7 @@ with hero_detection AS (
             WHEN vd.clean_title LIKE '%' || hp.clean_localized_name || '%' THEN 50
             WHEN vd.clean_description LIKE '%' || hp.clean_localized_name || '%' THEN 45
             ELSE 0
-        END as confidence_score
+        END as confidence_score_1
     FROM mvw_1_info_video vd
     CROSS JOIN vw_heroi hp
     WHERE 
@@ -53,14 +53,14 @@ with hero_detection AS (
             vd.clean_title LIKE '%' || hp.clean_localized_name || '%' OR
             vd.clean_description LIKE '%' || hp.clean_localized_name || '%'
         )
-    ORDER BY vd.id_movie, confidence_score DESC
+    ORDER BY vd.id_movie, confidence_score_1 DESC
 )
 SELECT 
     hd.*,
     -- Retornar herói apenas se confiança >= 60 (evita falsos positivos)
     CASE 
-        WHEN hd.confidence_score >= 60 THEN hd.detected_hero
+        WHEN hd.confidence_score_1 >= 60 THEN hd.detected_hero
         ELSE NULL 
     END as heroi
 FROM hero_detection hd
-WHERE hd.confidence_score > 0;
+WHERE hd.confidence_score_1 > 0;

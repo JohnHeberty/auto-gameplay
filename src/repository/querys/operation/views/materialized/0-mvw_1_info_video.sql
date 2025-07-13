@@ -12,9 +12,9 @@ with info_video_clean as (
 		c.id_youtube,
 		a.dt_upload,
 		-- Normalizar textos para busca (minúsculas, sem caracteres especiais)
-		LOWER(REGEXP_REPLACE(COALESCE(a.title, ''), '[^a-zA-Z0-9\s]', '', 'g')) as clean_title,
-		LOWER(REGEXP_REPLACE(COALESCE(a.description, ''), '[^a-zA-Z0-9\s]', '', 'g')) as clean_description,
-		LOWER(REGEXP_REPLACE(COALESCE(c.title, ''), '[^a-zA-Z0-9\s]', '', 'g')) as clean_playlist_title
+		LOWER(REGEXP_REPLACE(COALESCE(a.title, ''), '[^a-zA-Z0-9\s.]', '', 'g')) as clean_title,
+		LOWER(REGEXP_REPLACE(COALESCE(a.description, ''), '[^a-zA-Z0-9\s.]', '', 'g')) as clean_description,
+		LOWER(REGEXP_REPLACE(COALESCE(c.title, ''), '[^a-zA-Z0-9\s.]', '', 'g')) as clean_playlist_title
 	from public.playlist_movie_historic a
 	left join playlist_movie b on a.id_movie = b.id_movie
 	left join playlist c on c.id_playlist = b.id_playlist
