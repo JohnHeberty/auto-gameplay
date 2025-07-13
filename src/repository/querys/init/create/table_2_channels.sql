@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS CHANNEL (
     ID_GAME INTEGER,
     COUNTRY VARCHAR(30),
     REGISTER_DATE DATE,
+    IGNORE BOOLEAN NOT NULL DEFAULT FALSE,
     MY_CHANNEL BOOLEAN NOT NULL DEFAULT FALSE,
     CONSTRAINT fk_channel_game FOREIGN KEY (ID_GAME) REFERENCES GAMES(ID_GAME),
     PRIMARY KEY (ID_YOUTUBE)
@@ -28,6 +29,7 @@ COMMENT ON COLUMN CHANNEL.HANDLE IS                 'Handle/username do canal (@
 COMMENT ON COLUMN CHANNEL.ID_GAME IS                'ID do jogo principal associado ao canal (referência à tabela GAMES)';
 COMMENT ON COLUMN CHANNEL.COUNTRY IS                'País de origem do canal';
 COMMENT ON COLUMN CHANNEL.REGISTER_DATE IS          'Data de registro do canal no sistema';
+COMMENT ON COLUMN CHANNEL.IGNORE IS                 'Indica se o canal deve ser ignorado em análises ou processos';
 COMMENT ON COLUMN CHANNEL.MY_CHANNEL IS             'Indica se é um canal próprio/gerenciado pelo usuário';
 
 -- =====================================================================================

@@ -64,4 +64,6 @@ select
 	a.clean_description,
 	a.clean_playlist_title,
 	a.final_version as version
-from all_possible_version a;
+from all_possible_version a
+left join public.channel b on (a.id_youtube = b.id_youtube)
+where b.ignore = false;

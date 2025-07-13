@@ -8,14 +8,14 @@ with hero_detection AS (
         -- Score de confiança da detecção (maior = mais confiável)
         CASE
             -- Correspondência exata no título (máxima confiança)
-            WHEN vd.clean_title ~ ('\y' || hp.clean_localized_name || '\y') THEN 100
-            WHEN vd.clean_title ~ ('\y' || hp.clean_name || '\y') THEN 95
+            WHEN vd.clean_title ~ ('(^|[^a-zA-Z0-9.])' || hp.clean_localized_name || '([^a-zA-Z0-9.]|$)') THEN 100
+            WHEN vd.clean_title ~ ('(^|[^a-zA-Z0-9.])' || hp.clean_name || '([^a-zA-Z0-9.]|$)') THEN 95
             -- Correspondência exata na descrição
-            WHEN vd.clean_description ~ ('\y' || hp.clean_localized_name || '\y') THEN 90
-            WHEN vd.clean_description ~ ('\y' || hp.clean_name || '\y') THEN 85
+            WHEN vd.clean_description ~ ('(^|[^a-zA-Z0-9.])' || hp.clean_localized_name || '([^a-zA-Z0-9.]|$)') THEN 90
+            WHEN vd.clean_description ~ ('(^|[^a-zA-Z0-9.])' || hp.clean_name || '([^a-zA-Z0-9.]|$)') THEN 85
             -- Correspondência exata no título da playlist
-            WHEN vd.clean_playlist_title ~ ('\y' || hp.clean_localized_name || '\y') THEN 80
-            WHEN vd.clean_playlist_title ~ ('\y' || hp.clean_name || '\y') THEN 75
+            WHEN vd.clean_playlist_title ~ ('(^|[^a-zA-Z0-9.])' || hp.clean_localized_name || '([^a-zA-Z0-9.]|$)') THEN 80
+            WHEN vd.clean_playlist_title ~ ('(^|[^a-zA-Z0-9.])' || hp.clean_name || '([^a-zA-Z0-9.]|$)') THEN 75
             -- Correspondência sem espaços (ex: "pudge" em "pudgegameplay")
             WHEN vd.clean_title LIKE '%' || hp.no_space_name || '%' THEN 70
             WHEN vd.clean_description LIKE '%' || hp.no_space_name || '%' THEN 65
@@ -35,12 +35,12 @@ with hero_detection AS (
         -- Aplicar filtros de detecção de forma eficiente
         (
             -- Busca com regex para palavras completas (mais preciso)
-            vd.clean_title ~ ('\y' || hp.clean_localized_name || '\y') OR
-            vd.clean_title ~ ('\y' || hp.clean_name || '\y') OR
-            vd.clean_description ~ ('\y' || hp.clean_localized_name || '\y') OR
-            vd.clean_description ~ ('\y' || hp.clean_name || '\y') OR
-            vd.clean_playlist_title ~ ('\y' || hp.clean_localized_name || '\y') OR
-            vd.clean_playlist_title ~ ('\y' || hp.clean_name || '\y') OR
+            vd.clean_title ~ ('(^|[^a-zA-Z0-9.])' || hp.clean_localized_name || '([^a-zA-Z0-9.]|$)') OR
+            vd.clean_title ~ ('(^|[^a-zA-Z0-9.])' || hp.clean_name || '([^a-zA-Z0-9.]|$)') OR
+            vd.clean_description ~ ('(^|[^a-zA-Z0-9.])' || hp.clean_localized_name || '([^a-zA-Z0-9.]|$)') OR
+            vd.clean_description ~ ('(^|[^a-zA-Z0-9.])' || hp.clean_name || '([^a-zA-Z0-9.]|$)') OR
+            vd.clean_playlist_title ~ ('(^|[^a-zA-Z0-9.])' || hp.clean_localized_name || '([^a-zA-Z0-9.]|$)') OR
+            vd.clean_playlist_title ~ ('(^|[^a-zA-Z0-9.])' || hp.clean_name || '([^a-zA-Z0-9.]|$)') OR
             -- Busca com LIKE para casos especiais
             vd.clean_title LIKE '%' || hp.no_space_name || '%' OR
             vd.clean_description LIKE '%' || hp.no_space_name || '%' OR

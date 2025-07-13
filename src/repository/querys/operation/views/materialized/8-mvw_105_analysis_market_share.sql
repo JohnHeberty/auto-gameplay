@@ -7,7 +7,7 @@ with video_proplayer_heroi as (
 		ph.views,
 		ph.likes,
 		ph.id_movie
-	from mvw_3_info_video_proplayer ph
+	from public.mvw_3_info_video_heroi_proplayer ph
 	inner join mvw_2_info_video_heroi hh on (ph.id_movie = hh.id_movie)
 	where ph.proplayer is not null 
 	  and hh.heroi is not null 

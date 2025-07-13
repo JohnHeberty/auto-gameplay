@@ -5,7 +5,7 @@ with version_proplayer_filter as (
 		version,
 		views,
 		likes
-	from mvw_3_info_video_proplayer
+	from public.mvw_3_info_video_heroi_proplayer
 	where proplayer is not null and version is not null
 ),
 group_by_proplayer_version as (

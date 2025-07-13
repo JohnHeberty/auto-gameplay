@@ -8,11 +8,11 @@ with proplayer_detection AS (
         -- Score de confiança da detecção (maior = mais confiável)
         CASE
             -- Correspondência exata no título (máxima confiança)
-            WHEN vd.clean_title ~ ('\y' || pp.regex_safe_name || '\y') THEN 100
+            WHEN vd.clean_title ~ ('(^|[^a-zA-Z0-9.])' || pp.regex_safe_name || '([^a-zA-Z0-9.]|$)') THEN 100
             -- Correspondência exata na descrição
-            WHEN vd.clean_description ~ ('\y' || pp.regex_safe_name || '\y') THEN 90
+            WHEN vd.clean_description ~ ('(^|[^a-zA-Z0-9.])' || pp.regex_safe_name || '([^a-zA-Z0-9.]|$)') THEN 90
             -- Correspondência exata no título da playlist
-            WHEN vd.clean_playlist_title ~ ('\y' || pp.regex_safe_name || '\y') THEN 80
+            WHEN vd.clean_playlist_title ~ ('(^|[^a-zA-Z0-9.])' || pp.regex_safe_name || '([^a-zA-Z0-9.]|$)') THEN 80
             -- Correspondência sem espaços (ex: "miracle" em "miraclegameplay")
             WHEN vd.clean_title LIKE '%' || pp.no_space_name || '%' THEN 70
             WHEN vd.clean_description LIKE '%' || pp.no_space_name || '%' THEN 65
@@ -35,9 +35,9 @@ with proplayer_detection AS (
         -- Aplicar filtros de detecção de forma eficiente
         (
             -- Busca com regex para palavras completas (mais preciso)
-            vd.clean_title ~ ('\y' || pp.regex_safe_name || '\y') OR
-            vd.clean_description ~ ('\y' || pp.regex_safe_name || '\y') OR
-            vd.clean_playlist_title ~ ('\y' || pp.regex_safe_name || '\y') OR
+            vd.clean_title ~ ('(^|[^a-zA-Z0-9.])' || pp.regex_safe_name || '([^a-zA-Z0-9.]|$)') OR
+            vd.clean_description ~ ('(^|[^a-zA-Z0-9.])' || pp.regex_safe_name || '([^a-zA-Z0-9.]|$)') OR
+            vd.clean_playlist_title ~ ('(^|[^a-zA-Z0-9.])' || pp.regex_safe_name || '([^a-zA-Z0-9.]|$)') OR
             -- Busca com LIKE para casos especiais
             vd.clean_title LIKE '%' || pp.no_space_name || '%' OR
             vd.clean_description LIKE '%' || pp.no_space_name || '%' OR
