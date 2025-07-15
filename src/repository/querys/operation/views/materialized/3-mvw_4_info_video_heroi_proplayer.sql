@@ -1,4 +1,4 @@
-CREATE MATERIALIZED VIEW mvw_3_info_video_heroi_proplayer AS 
+CREATE MATERIALIZED VIEW mvw_4_info_video_heroi_proplayer AS 
 with proplayer_detection AS (
     -- Detectar proplayers usando múltiplos critérios de precisão com espaços para evitar falsos positivos
     SELECT DISTINCT ON (vd.id_movie)
@@ -37,7 +37,7 @@ with proplayer_detection AS (
             ) THEN 60
             ELSE 0
         END as confidence_score_2
-    FROM mvw_2_info_video_heroi vd
+    FROM mvw_3_info_video_heroi vd
     CROSS JOIN vw_proplayers pp
     WHERE 
         -- Aplicar filtros de detecção com as 3 variações de espaço para evitar falsos positivos
@@ -75,8 +75,7 @@ SELECT
     pd.*,
     -- Retornar proplayer apenas se confiança >= 60 (evita falsos positivos)
     CASE 
-        WHEN pd.confidence_score_2 >= 60 THEN pd.detected_proplayer
+        WHEN pd.confidence_score_2 > 60 THEN pd.detected_proplayer
         ELSE NULL 
     END as proplayer
-FROM proplayer_detection pd
-WHERE pd.confidence_score_2 > 0;
+FROM proplayer_detection pd;

@@ -16,7 +16,7 @@ from top_players_hero;
 
 
 SELECT id_movie, title, description, "views", likes, id_video, id_playlist, title_playlist, id_youtube, dt_upload, clean_title, clean_description, clean_playlist_title, "version", detected_hero, id_hero, confidence_score_1, heroi, detected_proplayer, id_proplayer, confidence_score_2, proplayer
-FROM public.mvw_3_info_video_heroi_proplayer
+FROM public.mvw_4_info_video_heroi_proplayer
 where proplayer = 'Ace' and heroi = 'Faceless Void' and "version" = '7.39'
 
 

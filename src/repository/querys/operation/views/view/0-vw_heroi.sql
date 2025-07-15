@@ -14,7 +14,22 @@ with hero_patterns as (
             WHEN LENGTH(h.localized_name) > 6 
             THEN LOWER(LEFT(h.localized_name, 4))
             ELSE NULL 
-        END as short_name
+        END as short_name,
+        -- Repartição de nomes compostos
+        CASE 
+            WHEN POSITION('-' IN TRIM(h.localized_name)) > 0 
+            THEN LOWER(TRIM(SPLIT_PART(h.localized_name, '-', 1)))
+            WHEN POSITION(' ' IN TRIM(h.localized_name)) > 0 
+            THEN LOWER(TRIM(SPLIT_PART(h.localized_name, ' ', 1)))
+            ELSE LOWER(TRIM(h.localized_name))
+        END as first_name,
+        CASE 
+            WHEN POSITION('-' IN TRIM(h.localized_name)) > 0 
+            THEN LOWER(TRIM(SUBSTRING(h.localized_name FROM POSITION('-' IN h.localized_name) + 1)))
+            WHEN POSITION(' ' IN TRIM(h.localized_name)) > 0 
+            THEN LOWER(TRIM(SUBSTRING(h.localized_name FROM POSITION(' ' IN h.localized_name) + 1)))
+            ELSE NULL
+        END as second_name
     FROM heroes h
     WHERE h.localized_name IS NOT NULL 
     AND LENGTH(TRIM(h.localized_name)) > 2

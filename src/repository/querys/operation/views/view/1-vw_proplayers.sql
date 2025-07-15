@@ -15,7 +15,22 @@ SELECT
         WHEN LENGTH(p.name) > 6 
         THEN LOWER(LEFT(p.name, 4))
         ELSE NULL 
-    END as short_name
+    END as short_name,
+    -- Repartição de nomes compostos
+    CASE 
+        WHEN POSITION('-' IN TRIM(p.name)) > 0 
+        THEN LOWER(TRIM(SPLIT_PART(p.name, '-', 1)))
+        WHEN POSITION(' ' IN TRIM(p.name)) > 0 
+        THEN LOWER(TRIM(SPLIT_PART(p.name, ' ', 1)))
+        ELSE LOWER(TRIM(p.name))
+    END as first_name,
+    CASE 
+        WHEN POSITION('-' IN TRIM(p.name)) > 0 
+        THEN LOWER(TRIM(SUBSTRING(p.name FROM POSITION('-' IN p.name) + 1)))
+        WHEN POSITION(' ' IN TRIM(p.name)) > 0 
+        THEN LOWER(TRIM(SUBSTRING(p.name FROM POSITION(' ' IN p.name) + 1)))
+        ELSE NULL
+    END as second_name
 FROM proplayers p
 WHERE p.name IS NOT NULL 
 AND LENGTH(TRIM(p.name)) > 2;

@@ -5,7 +5,7 @@ WITH group_by_version as (
         SUM(likes) as all_likes,
         SUM("views") as all_views,
         count(*) as all_videos
-    from mvw_1_info_video
+    from mvw_2_info_video_clean_words
     group by version
 ), 
 insert_data AS (

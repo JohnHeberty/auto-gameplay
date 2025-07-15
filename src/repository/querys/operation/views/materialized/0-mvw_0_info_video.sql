@@ -1,4 +1,4 @@
-CREATE MATERIALIZED VIEW mvw_1_info_video AS 
+CREATE MATERIALIZED VIEW mvw_0_info_video AS 
 with info_video_clean as (
 	select 
 		a.id_movie, 

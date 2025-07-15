@@ -6,7 +6,7 @@ with group_by_channel as (
 		sum(likes) as total_likes,
 		sum(views) as total_views,
 		count(*) as total_videos
-	FROM public.mvw_1_info_video
+	FROM public.mvw_2_info_video_clean_words
 	group by id_youtube, version
 ),
 get_channel_and_days_version as (

@@ -1,4 +1,4 @@
-CREATE MATERIALIZED VIEW mvw_2_info_video_heroi AS 
+CREATE MATERIALIZED VIEW mvw_3_info_video_heroi AS 
 with hero_detection AS (
     -- Detectar heróis usando múltiplos critérios de precisão com espaços para evitar falsos positivos
     SELECT DISTINCT ON (vd.id_movie)
@@ -39,7 +39,7 @@ with hero_detection AS (
             ) THEN 60
             ELSE 0
         END as confidence_score_1
-    FROM mvw_1_info_video vd
+    FROM mvw_2_info_video_clean_words vd
     CROSS JOIN vw_heroi hp
     WHERE 
         -- Aplicar filtros de detecção com as 3 variações de espaço para evitar falsos positivos
@@ -90,7 +90,7 @@ SELECT
     hd.version,
     -- Aplicar limpeza diretamente nas colunas clean existentes
     CASE 
-        WHEN hd.confidence_score_1 >= 60 THEN 
+        WHEN hd.confidence_score_1 > 60 THEN 
             TRIM(REGEXP_REPLACE(
                 REGEXP_REPLACE(hd.clean_title, 
                     '\y' || LOWER(hd.detected_hero) || '\y', ' ', 'gi'),
@@ -98,7 +98,7 @@ SELECT
         ELSE hd.clean_title 
     END as clean_title,
     CASE 
-        WHEN hd.confidence_score_1 >= 60 THEN 
+        WHEN hd.confidence_score_1 > 60 THEN 
             TRIM(REGEXP_REPLACE(
                 REGEXP_REPLACE(hd.clean_description, 
                     '\y' || LOWER(hd.detected_hero) || '\y', ' ', 'gi'),
@@ -106,7 +106,7 @@ SELECT
         ELSE hd.clean_description 
     END as clean_description,
     CASE 
-        WHEN hd.confidence_score_1 >= 60 THEN 
+        WHEN hd.confidence_score_1 > 60 THEN 
             TRIM(REGEXP_REPLACE(
                 REGEXP_REPLACE(hd.clean_playlist_title, 
                     '\y' || LOWER(hd.detected_hero) || '\y', ' ', 'gi'),
@@ -118,9 +118,8 @@ SELECT
     hd.confidence_score_1,
     -- Retornar herói apenas se confiança >= 60 (evita falsos positivos)
     CASE 
-        WHEN hd.confidence_score_1 >= 60 THEN hd.detected_hero
+        WHEN hd.confidence_score_1 > 60 THEN hd.detected_hero
         ELSE NULL 
     END as heroi
 FROM hero_detection hd
-LEFT JOIN public.channel ch ON (hd.id_youtube = ch.id_youtube)
-WHERE hd.confidence_score_1 > 0;
+LEFT JOIN public.channel ch ON (hd.id_youtube = ch.id_youtube);
