@@ -1,50 +1,51 @@
-create materialized view mvw_105_analysis_market_share as 
-with video_proplayer_heroi as (
+create materialized view mvw_105_analysis_market_share as
+with 
+video_proplayer_heroi as (
 	select 
-		ph.proplayer,
-		hh.heroi as hero,
+		ph.proplayer_final,
+		hh.heroi_final,
 		ph.version,
 		ph.views,
 		ph.likes,
 		ph.id_movie
 	from public.mvw_4_info_video_heroi_proplayer ph
 	inner join mvw_3_info_video_heroi hh on (ph.id_movie = hh.id_movie)
-	where ph.proplayer is not null 
-	  and hh.heroi is not null 
+	where ph.proplayer_final is not null 
+	  and hh.heroi_final is not null 
 	  and ph.version is not null
 ),
 group_by_proplayer_heroi_version as (
 	select 
-		proplayer,
-		hero,
+		proplayer_final,
+		heroi_final,
 		version,
 		sum(views) total_views,
 		sum(likes) total_likes,
 		count(*) as total_videos
 	from video_proplayer_heroi
-	group by version, proplayer, hero
+	group by version, proplayer_final, heroi_final
 ),
 -- Agregação por herói para calcular market-share
-hero_totals as (
+heroi_totals as (
 	select 
-		hero,
+		heroi_final,
 		version,
-		sum(views) as hero_total_views,
-		sum(likes) as hero_total_likes,
-		count(*) as hero_total_videos
+		sum(views) as heroi_total_views,
+		sum(likes) as heroi_total_likes,
+		count(*) as heroi_total_videos
 	from video_proplayer_heroi
-	group by version, hero
+	group by version, heroi_final
 ),
 -- Agregação por proplayer para calcular market-share
 proplayer_totals as (
 	select 
-		proplayer,
+		proplayer_final,
 		version,
 		sum(views) as proplayer_total_views,
 		sum(likes) as proplayer_total_likes,
 		count(*) as proplayer_total_videos
 	from video_proplayer_heroi
-	group by version, proplayer
+	group by version, proplayer_final
 ),
 -- Totais gerais por versão para market-share absoluto
 version_totals as (
@@ -59,15 +60,15 @@ version_totals as (
 -- Calcular market-share em todas as dimensões
 market_share_calculations as (
 	select 
-		ph.proplayer,
-		ph.hero,
+		ph.proplayer_final,
+		ph.heroi_final,
 		ph.version,
 		ph.total_views,
 		ph.total_likes,
 		ph.total_videos,
-		ht.hero_total_views,
-		ht.hero_total_likes,
-		ht.hero_total_videos,
+		ht.heroi_total_views,
+		ht.heroi_total_likes,
+		ht.heroi_total_videos,
 		pt.proplayer_total_views,
 		pt.proplayer_total_likes,
 		pt.proplayer_total_videos,
@@ -75,14 +76,14 @@ market_share_calculations as (
 		vt.version_total_likes,
 		vt.version_total_videos,
 		-- Market-share do proplayer no herói específico
-		case when ht.hero_total_views > 0 then 
-			round((ph.total_views::decimal / ht.hero_total_views * 100), 2) 
+		case when ht.heroi_total_views > 0 then 
+			round((ph.total_views::decimal / ht.heroi_total_views * 100), 2) 
 		else null end as market_share_hero_views_percent,
-		case when ht.hero_total_likes > 0 then 
-			round((ph.total_likes::decimal / ht.hero_total_likes * 100), 2) 
+		case when ht.heroi_total_likes > 0 then 
+			round((ph.total_likes::decimal / ht.heroi_total_likes * 100), 2) 
 		else null end as market_share_hero_likes_percent,
-		case when ht.hero_total_videos > 0 then 
-			round((ph.total_videos::decimal / ht.hero_total_videos * 100), 2) 
+		case when ht.heroi_total_videos > 0 then 
+			round((ph.total_videos::decimal / ht.heroi_total_videos * 100), 2) 
 		else null end as market_share_hero_videos_percent,
 		-- Market-share do herói no proplayer específico
 		case when pt.proplayer_total_views > 0 then 
@@ -105,8 +106,8 @@ market_share_calculations as (
 			round((ph.total_videos::decimal / vt.version_total_videos * 100), 2) 
 		else null end as market_share_version_videos_percent
 	from group_by_proplayer_heroi_version ph
-	left join hero_totals ht on (ph.hero = ht.hero and ph.version = ht.version)
-	left join proplayer_totals pt on (ph.proplayer = pt.proplayer and ph.version = pt.version)
+	left join heroi_totals ht on (ph.heroi_final = ht.heroi_final and ph.version = ht.version)
+	left join proplayer_totals pt on (ph.proplayer_final = pt.proplayer_final and ph.version = pt.version)
 	left join version_totals vt on (ph.version = vt.version)
 ),
 includ_days_of_version as (

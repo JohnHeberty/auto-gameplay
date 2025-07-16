@@ -28,7 +28,7 @@ info_video_limpo AS (
                              AND palavra_individual NOT LIKE '%.com%'
                              AND palavra_individual NOT LIKE '%.com.br%'
                              AND palavra_individual NOT LIKE '%www.%'
-                             AND palavra_individual NOT LIKE 'http%'
+                             AND palavra_individual NOT LIKE '%http%'
                              AND palavra_individual NOT LIKE '%youtube.%'
                         THEN palavra_individual 
                         ELSE NULL 
@@ -46,7 +46,7 @@ info_video_limpo AS (
                              AND palavra_individual NOT LIKE '%.com%'
                              AND palavra_individual NOT LIKE '%.com.br%'
                              AND palavra_individual NOT LIKE '%www.%'
-                             AND palavra_individual NOT LIKE 'http%'
+                             AND palavra_individual NOT LIKE '%http%'
                              AND palavra_individual NOT LIKE '%youtube.%'
                         THEN palavra_individual 
                         ELSE NULL 
@@ -64,7 +64,7 @@ info_video_limpo AS (
                              AND palavra_individual NOT LIKE '%.com%'
                              AND palavra_individual NOT LIKE '%.com.br%'
                              AND palavra_individual NOT LIKE '%www.%'
-                             AND palavra_individual NOT LIKE 'http%'
+                             AND palavra_individual NOT LIKE '%http%'
                              AND palavra_individual NOT LIKE '%youtube.%'
                         THEN palavra_individual 
                         ELSE NULL 

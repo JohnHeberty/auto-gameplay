@@ -1,28 +1,28 @@
 create materialized view mvw_104_analysis_version_proplayer_heroi as 
 with video_proplayer_heroi as (
 	select 
-		ph.proplayer,
-		hh.heroi as hero,
+		ph.proplayer_final,
+		hh.heroi_final as hero,
 		ph.version,
 		ph.views,
 		ph.likes,
 		ph.id_movie
 	from public.mvw_4_info_video_heroi_proplayer ph
 	inner join mvw_3_info_video_heroi hh on (ph.id_movie = hh.id_movie)
-	where ph.proplayer is not null 
-	  and hh.heroi is not null 
+	where ph.proplayer_final is not null 
+	  and hh.heroi_final is not null 
 	  and ph.version is not null
 ),
 group_by_proplayer_heroi_version as (
 	select 
-		proplayer,
+		proplayer_final,
 		hero,
 		version,
 		sum(views) total_views,
 		sum(likes) total_likes,
 		count(*) as total_videos
 	from video_proplayer_heroi
-	group by version, proplayer, hero
+	group by version, proplayer_final, hero
 ),
 includ_days_of_version as (
 	select a.*, mav.days_between_versions, mav.date as date_version

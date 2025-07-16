@@ -1,12 +1,12 @@
 create materialized view mvw_102_analysis_version_heroi as 
 with version_heroi_filter as (
 	select 
-		heroi as hero,
+		heroi_final as hero,
 		version,
 		views,
 		likes
 	from mvw_3_info_video_heroi
-	where heroi is not null and version is not null
+	where heroi_final is not null and version is not null
 ),
 group_by_heroi_version as (
 	select 
