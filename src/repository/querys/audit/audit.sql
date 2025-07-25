@@ -15,10 +15,35 @@ select *
 from top_players_hero;
 
 
-SELECT id_movie, title, description, "views", likes, id_video, id_playlist, title_playlist, id_youtube, dt_upload, clean_title, clean_description, clean_playlist_title, "version", 
-       detected_hero_1, id_hero_1, confidence_score_1, heroi, heroi1, heroi2, heroi_final,
-       detected_proplayer_1, id_proplayer_1, confidence_score_proplayer_1, proplayer, proplayer1, proplayer2, proplayer_final
+
+
+with top_players as (
+	select a.proplayer_final
+	from public.mvw_103_analysis_version_proplayer a
+	where version = '7.39' and a.total_videos > 2
+	limit 20
+),
+top_proplayers_heroi as (
+	select a.*
+	from public.mvw_104_analysis_version_proplayer_heroi a
+	where version = '7.39' and a.total_videos > 2
+),
+top_filters as (
+	select a.*
+	from top_proplayers_heroi a
+	where a.proplayer_final in (select b.proplayer_final from top_players b)
+)
+select *
+from top_filters
+
+
+
+SELECT *
 FROM public.mvw_4_info_video_heroi_proplayer
-where proplayer_final = 'Ace' and heroi_final = 'Faceless Void' and "version" = '7.39'
+where proplayer_final = 'Miracle' and heroi_final = 'Invoker'
+and "version" = '7.39'
+
+
+
 
 

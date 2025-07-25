@@ -1,231 +1,180 @@
 -- MATERIALIZED VIEW PARA DETECÇÃO DE MÚLTIPLOS PROPLAYERS
--- Implementa detecção de até 3 proplayers por vídeo:
--- - proplayer1: primeiro proplayer detectado (confiança > 60)
--- - proplayer2: segundo proplayer detectado, excluindo o primeiro (confiança > 60)
--- - proplayer3: verificação de existência de terceiro proplayer (apenas check, sem coluna)
--- - proplayer_final: regra de negócio baseada na quantidade de proplayers:
---   * NULL se existirem 3 proplayers
---   * Nome do proplayer se existir apenas 1
---   * "x1" se existirem 2 proplayers
--- - proplayer: mantido para compatibilidade (igual a proplayer1)
+-- Nova abordagem otimizada:
+-- 1. Usar big_string já processada (sem heróis) do mvw_3_info_video_heroi
+-- 2. Contar ocorrências de cada proplayer na big_string
+-- 3. Ranking por ocorrências (filtrar > 1)
+-- 4. Top1 = proplayer1, Top2 = proplayer2, proplayer_final baseado na diferença
+-- 5. Remover nomes de proplayers detectados da big_string
 
 CREATE MATERIALIZED VIEW mvw_4_info_video_heroi_proplayer AS 
-with proplayer_detection_1 AS (
-    -- Detectar primeiro proplayer usando múltiplos critérios de precisão com espaços para evitar falsos positivos
-    SELECT DISTINCT ON (vd.id_movie)
-        vd.*,
-        pp.name as detected_proplayer_1,
-        pp.id_proplayer as id_proplayer_1,
-        -- Score de confiança da detecção (maior = mais confiável)
-        CASE
-            -- Correspondência exata no título com as 3 variações de espaço (máxima confiança)
-            WHEN (' ' || vd.clean_title || ' ') LIKE ('% ' || pp.clean_name || ' %') OR  -- ' Name '
-                 (' ' || vd.clean_title || ' ') LIKE ('% ' || pp.clean_name || '') OR   -- ' Name'
-                 (' ' || vd.clean_title || ' ') LIKE ('' || pp.clean_name || ' %') THEN 100  -- 'Name '
-            -- Correspondência exata na descrição com as 3 variações de espaço
-            WHEN (' ' || vd.clean_description || ' ') LIKE ('% ' || pp.clean_name || ' %') OR
-                 (' ' || vd.clean_description || ' ') LIKE ('% ' || pp.clean_name || '') OR
-                 (' ' || vd.clean_description || ' ') LIKE ('' || pp.clean_name || ' %') THEN 90
-            -- Correspondência exata no título da playlist com as 3 variações de espaço
-            WHEN (' ' || vd.clean_playlist_title || ' ') LIKE ('% ' || pp.clean_name || ' %') OR
-                 (' ' || vd.clean_playlist_title || ' ') LIKE ('% ' || pp.clean_name || '') OR
-                 (' ' || vd.clean_playlist_title || ' ') LIKE ('' || pp.clean_name || ' %') THEN 80
-            -- Correspondência sem símbolos com as 3 variações de espaço
-            WHEN (' ' || vd.clean_title || ' ') LIKE ('% ' || pp.clean_no_symbols_name || ' %') OR
-                 (' ' || vd.clean_title || ' ') LIKE ('% ' || pp.clean_no_symbols_name || '') OR
-                 (' ' || vd.clean_title || ' ') LIKE ('' || pp.clean_no_symbols_name || ' %') THEN 75
-            WHEN (' ' || vd.clean_description || ' ') LIKE ('% ' || pp.clean_no_symbols_name || ' %') OR
-                 (' ' || vd.clean_description || ' ') LIKE ('% ' || pp.clean_no_symbols_name || '') OR
-                 (' ' || vd.clean_description || ' ') LIKE ('' || pp.clean_no_symbols_name || ' %') THEN 70
-            -- Correspondência parcial com nomes longos (ex: "mira" para "miracle") - apenas se >= 4 chars
-            WHEN pp.short_name IS NOT NULL AND LENGTH(pp.short_name) >= 4 AND (
-                (' ' || vd.clean_title || ' ') LIKE ('% ' || pp.short_name || ' %') OR
-                (' ' || vd.clean_title || ' ') LIKE ('% ' || pp.short_name || '') OR
-                (' ' || vd.clean_title || ' ') LIKE ('' || pp.short_name || ' %') OR
-                (' ' || vd.clean_description || ' ') LIKE ('% ' || pp.short_name || ' %') OR
-                (' ' || vd.clean_description || ' ') LIKE ('% ' || pp.short_name || '') OR
-                (' ' || vd.clean_description || ' ') LIKE ('' || pp.short_name || ' %')
-            ) THEN 60
-            ELSE 0
-        END as confidence_score_proplayer_1
+WITH nomes_proplayers AS (
+    -- Buscar todos os nomes de proplayers para filtrar da big_string após detecção
+    SELECT DISTINCT
+        LOWER(TRIM(pp.name)) as proplayer_name
+    FROM vw_proplayers pp
+    WHERE pp.name IS NOT NULL AND LENGTH(TRIM(pp.name)) >= 3
+    UNION
+    SELECT DISTINCT
+        LOWER(TRIM(pp.clean_name)) as proplayer_name  
+    FROM vw_proplayers pp
+    WHERE pp.clean_name IS NOT NULL AND LENGTH(TRIM(pp.clean_name)) >= 3
+    UNION
+    SELECT DISTINCT
+        LOWER(TRIM(pp.clean_no_symbols_name)) as proplayer_name
+    FROM vw_proplayers pp
+    WHERE pp.clean_no_symbols_name IS NOT NULL AND LENGTH(TRIM(pp.clean_no_symbols_name)) >= 3
+    UNION
+    SELECT DISTINCT
+        LOWER(TRIM(pp.short_name)) as proplayer_name
+    FROM vw_proplayers pp
+    WHERE pp.short_name IS NOT NULL AND LENGTH(TRIM(pp.short_name)) >= 4
+),
+proplayer_occurrence_count AS (
+    -- Contar ocorrências de cada proplayer na big_string (já sem heróis da view anterior)
+    SELECT 
+        vd.id_movie,
+        vd.id_video,
+        vd.id_playlist,
+        vd.title,
+        vd.description,
+        vd.views,
+        vd.likes,
+        vd.title_playlist,
+        vd.id_youtube,
+        vd.dt_upload,
+        vd.version,
+        vd.keywords,
+        vd.heroi1,
+        vd.heroi2,
+        vd.x1_detectado,
+        vd.heroi_final,
+        vd.big_string,
+        pp.id_proplayer,
+        pp.name as proplayer_name,
+        -- Contar ocorrências do proplayer na big_string usando length/replace (com espaços para palavras completas)
+        (
+            CASE WHEN LENGTH(LOWER(pp.name)) > 0 AND LENGTH(vd.big_string) > 0 THEN
+                (LENGTH(LOWER(vd.big_string)) - LENGTH(REPLACE(LOWER(vd.big_string), CONCAT(' ', LOWER(pp.name), ' '), ''))) / LENGTH(CONCAT(' ', LOWER(pp.name), ' '))
+            ELSE 0 END +
+            -- Também contar usando clean_name se diferente de name
+            CASE WHEN pp.clean_name != LOWER(pp.name) AND LENGTH(LOWER(pp.clean_name)) > 0 AND LENGTH(vd.big_string) > 0 THEN
+                (LENGTH(LOWER(vd.big_string)) - LENGTH(REPLACE(LOWER(vd.big_string), CONCAT(' ', LOWER(pp.clean_name), ' '), ''))) / LENGTH(CONCAT(' ', LOWER(pp.clean_name), ' '))
+            ELSE 0 END +
+            -- Também contar usando clean_no_symbols_name se existir
+            CASE WHEN pp.clean_no_symbols_name IS NOT NULL AND LENGTH(LOWER(pp.clean_no_symbols_name)) > 0 AND LENGTH(vd.big_string) > 0 THEN
+                (LENGTH(LOWER(vd.big_string)) - LENGTH(REPLACE(LOWER(vd.big_string), CONCAT(' ', LOWER(pp.clean_no_symbols_name), ' '), ''))) / LENGTH(CONCAT(' ', LOWER(pp.clean_no_symbols_name), ' '))
+            ELSE 0 END +
+            -- Também contar usando short_name se existir e >= 4 chars
+            CASE WHEN pp.short_name IS NOT NULL AND LENGTH(pp.short_name) >= 4 AND LENGTH(vd.big_string) > 0 THEN
+                (LENGTH(LOWER(vd.big_string)) - LENGTH(REPLACE(LOWER(vd.big_string), CONCAT(' ', LOWER(pp.short_name), ' '), ''))) / LENGTH(CONCAT(' ', LOWER(pp.short_name), ' '))
+            ELSE 0 END
+        ) as proplayer_occurrence_count
     FROM mvw_3_info_video_heroi vd
     CROSS JOIN vw_proplayers pp
-    WHERE 
-        -- Aplicar filtros de detecção com as 3 variações de espaço para evitar falsos positivos
-        (
-            -- Busca com as 3 variações de espaço para palavras completas (evita falsos positivos)
-            (' ' || vd.clean_title || ' ') LIKE ('% ' || pp.clean_name || ' %') OR  -- ' Name '
-            (' ' || vd.clean_title || ' ') LIKE ('% ' || pp.clean_name || '') OR   -- ' Name'
-            (' ' || vd.clean_title || ' ') LIKE ('' || pp.clean_name || ' %') OR   -- 'Name '
-            (' ' || vd.clean_description || ' ') LIKE ('% ' || pp.clean_name || ' %') OR
-            (' ' || vd.clean_description || ' ') LIKE ('% ' || pp.clean_name || '') OR
-            (' ' || vd.clean_description || ' ') LIKE ('' || pp.clean_name || ' %') OR
-            (' ' || vd.clean_playlist_title || ' ') LIKE ('% ' || pp.clean_name || ' %') OR
-            (' ' || vd.clean_playlist_title || ' ') LIKE ('% ' || pp.clean_name || '') OR
-            (' ' || vd.clean_playlist_title || ' ') LIKE ('' || pp.clean_name || ' %') OR
-            -- Busca sem símbolos com as 3 variações de espaço
-            (' ' || vd.clean_title || ' ') LIKE ('% ' || pp.clean_no_symbols_name || ' %') OR
-            (' ' || vd.clean_title || ' ') LIKE ('% ' || pp.clean_no_symbols_name || '') OR
-            (' ' || vd.clean_title || ' ') LIKE ('' || pp.clean_no_symbols_name || ' %') OR
-            (' ' || vd.clean_description || ' ') LIKE ('% ' || pp.clean_no_symbols_name || ' %') OR
-            (' ' || vd.clean_description || ' ') LIKE ('% ' || pp.clean_no_symbols_name || '') OR
-            (' ' || vd.clean_description || ' ') LIKE ('' || pp.clean_no_symbols_name || ' %') OR
-            -- Busca por nome abreviado com as 3 variações de espaço (apenas para nomes >= 4 chars)
-            (pp.short_name IS NOT NULL AND LENGTH(pp.short_name) >= 4 AND (
-                (' ' || vd.clean_title || ' ') LIKE ('% ' || pp.short_name || ' %') OR
-                (' ' || vd.clean_title || ' ') LIKE ('% ' || pp.short_name || '') OR
-                (' ' || vd.clean_title || ' ') LIKE ('' || pp.short_name || ' %') OR
-                (' ' || vd.clean_description || ' ') LIKE ('% ' || pp.short_name || ' %') OR
-                (' ' || vd.clean_description || ' ') LIKE ('% ' || pp.short_name || '') OR
-                (' ' || vd.clean_description || ' ') LIKE ('' || pp.short_name || ' %')
-            ))
-        )
-    ORDER BY vd.id_movie, confidence_score_proplayer_1 DESC
 ),
-proplayer_detection_2 AS (
-    -- Detectar segundo proplayer excluindo o primeiro
-    SELECT DISTINCT ON (pd1.id_movie)
-        pd1.*,
-        pp.name as detected_proplayer_2,
-        pp.id_proplayer as id_proplayer_2,
-        -- Score de confiança da detecção do segundo proplayer
-        CASE
-            -- Correspondência exata no título com as 3 variações de espaço (máxima confiança)
-            WHEN (' ' || pd1.clean_title || ' ') LIKE ('% ' || pp.clean_name || ' %') OR
-                 (' ' || pd1.clean_title || ' ') LIKE ('% ' || pp.clean_name || '') OR
-                 (' ' || pd1.clean_title || ' ') LIKE ('' || pp.clean_name || ' %') THEN 100
-            -- Correspondência exata na descrição com as 3 variações de espaço
-            WHEN (' ' || pd1.clean_description || ' ') LIKE ('% ' || pp.clean_name || ' %') OR
-                 (' ' || pd1.clean_description || ' ') LIKE ('% ' || pp.clean_name || '') OR
-                 (' ' || pd1.clean_description || ' ') LIKE ('' || pp.clean_name || ' %') THEN 90
-            -- Correspondência exata no título da playlist com as 3 variações de espaço
-            WHEN (' ' || pd1.clean_playlist_title || ' ') LIKE ('% ' || pp.clean_name || ' %') OR
-                 (' ' || pd1.clean_playlist_title || ' ') LIKE ('% ' || pp.clean_name || '') OR
-                 (' ' || pd1.clean_playlist_title || ' ') LIKE ('' || pp.clean_name || ' %') THEN 80
-            -- Correspondência sem símbolos com as 3 variações de espaço
-            WHEN (' ' || pd1.clean_title || ' ') LIKE ('% ' || pp.clean_no_symbols_name || ' %') OR
-                 (' ' || pd1.clean_title || ' ') LIKE ('% ' || pp.clean_no_symbols_name || '') OR
-                 (' ' || pd1.clean_title || ' ') LIKE ('' || pp.clean_no_symbols_name || ' %') THEN 75
-            WHEN (' ' || pd1.clean_description || ' ') LIKE ('% ' || pp.clean_no_symbols_name || ' %') OR
-                 (' ' || pd1.clean_description || ' ') LIKE ('% ' || pp.clean_no_symbols_name || '') OR
-                 (' ' || pd1.clean_description || ' ') LIKE ('' || pp.clean_no_symbols_name || ' %') THEN 70
-            -- Correspondência parcial com nomes longos
-            WHEN pp.short_name IS NOT NULL AND LENGTH(pp.short_name) >= 4 AND (
-                (' ' || pd1.clean_title || ' ') LIKE ('% ' || pp.short_name || ' %') OR
-                (' ' || pd1.clean_title || ' ') LIKE ('% ' || pp.short_name || '') OR
-                (' ' || pd1.clean_title || ' ') LIKE ('' || pp.short_name || ' %') OR
-                (' ' || pd1.clean_description || ' ') LIKE ('% ' || pp.short_name || ' %') OR
-                (' ' || pd1.clean_description || ' ') LIKE ('% ' || pp.short_name || '') OR
-                (' ' || pd1.clean_description || ' ') LIKE ('' || pp.short_name || ' %')
-            ) THEN 60
-            ELSE 0
-        END as confidence_score_2_second
-    FROM proplayer_detection_1 pd1
-    CROSS JOIN vw_proplayers pp
-    WHERE 
-        -- Excluir o primeiro proplayer detectado
-        pp.id_proplayer != pd1.id_proplayer_1
-        AND pd1.confidence_score_proplayer_1 > 60  -- Só procurar segundo proplayer se o primeiro for válido
-        AND (
-            -- Mesmos critérios de detecção do primeiro proplayer
-            (' ' || pd1.clean_title || ' ') LIKE ('% ' || pp.clean_name || ' %') OR
-            (' ' || pd1.clean_title || ' ') LIKE ('% ' || pp.clean_name || '') OR
-            (' ' || pd1.clean_title || ' ') LIKE ('' || pp.clean_name || ' %') OR
-            (' ' || pd1.clean_description || ' ') LIKE ('% ' || pp.clean_name || ' %') OR
-            (' ' || pd1.clean_description || ' ') LIKE ('% ' || pp.clean_name || '') OR
-            (' ' || pd1.clean_description || ' ') LIKE ('' || pp.clean_name || ' %') OR
-            (' ' || pd1.clean_playlist_title || ' ') LIKE ('% ' || pp.clean_name || ' %') OR
-            (' ' || pd1.clean_playlist_title || ' ') LIKE ('% ' || pp.clean_name || '') OR
-            (' ' || pd1.clean_playlist_title || ' ') LIKE ('' || pp.clean_name || ' %') OR
-            -- Busca sem símbolos
-            (' ' || pd1.clean_title || ' ') LIKE ('% ' || pp.clean_no_symbols_name || ' %') OR
-            (' ' || pd1.clean_title || ' ') LIKE ('% ' || pp.clean_no_symbols_name || '') OR
-            (' ' || pd1.clean_title || ' ') LIKE ('' || pp.clean_no_symbols_name || ' %') OR
-            (' ' || pd1.clean_description || ' ') LIKE ('% ' || pp.clean_no_symbols_name || ' %') OR
-            (' ' || pd1.clean_description || ' ') LIKE ('% ' || pp.clean_no_symbols_name || '') OR
-            (' ' || pd1.clean_description || ' ') LIKE ('' || pp.clean_no_symbols_name || ' %') OR
-            -- Busca por nome abreviado
-            (pp.short_name IS NOT NULL AND LENGTH(pp.short_name) >= 4 AND (
-                (' ' || pd1.clean_title || ' ') LIKE ('% ' || pp.short_name || ' %') OR
-                (' ' || pd1.clean_title || ' ') LIKE ('% ' || pp.short_name || '') OR
-                (' ' || pd1.clean_title || ' ') LIKE ('' || pp.short_name || ' %') OR
-                (' ' || pd1.clean_description || ' ') LIKE ('% ' || pp.short_name || ' %') OR
-                (' ' || pd1.clean_description || ' ') LIKE ('% ' || pp.short_name || '') OR
-                (' ' || pd1.clean_description || ' ') LIKE ('' || pp.short_name || ' %')
-            ))
-        )
-    ORDER BY pd1.id_movie, confidence_score_2_second DESC
+proplayer_ranking AS (
+    -- Criar ranking por ocorrências e filtrar apenas proplayers com contagem > 1
+    SELECT 
+        poc.*,
+        ROW_NUMBER() OVER (PARTITION BY poc.id_movie ORDER BY poc.proplayer_occurrence_count DESC, poc.id_proplayer) as proplayer_rank
+    FROM proplayer_occurrence_count poc
+    WHERE poc.proplayer_occurrence_count > 1  -- Filtrar apenas proplayers com mais de 1 ocorrência
 ),
-proplayer_detection_3_check AS (
-    -- Verificar se existe um terceiro proplayer
-    SELECT DISTINCT 
-        pd2.id_movie,
-        CASE 
-            WHEN COUNT(DISTINCT pp.id_proplayer) > 0 THEN TRUE
-            ELSE FALSE
-        END as has_third_proplayer
-    FROM proplayer_detection_2 pd2
-    CROSS JOIN vw_proplayers pp
-    WHERE 
-        -- Excluir o primeiro e segundo proplayer detectados
-        pp.id_proplayer != pd2.id_proplayer_1
-        AND pp.id_proplayer != COALESCE(pd2.id_proplayer_2, -1)
-        AND pd2.confidence_score_2_second > 60  -- Só verificar terceiro proplayer se o segundo for válido
-        AND (
-            -- Mesmos critérios de detecção
-            (' ' || pd2.clean_title || ' ') LIKE ('% ' || pp.clean_name || ' %') OR
-            (' ' || pd2.clean_title || ' ') LIKE ('% ' || pp.clean_name || '') OR
-            (' ' || pd2.clean_title || ' ') LIKE ('' || pp.clean_name || ' %') OR
-            (' ' || pd2.clean_description || ' ') LIKE ('% ' || pp.clean_name || ' %') OR
-            (' ' || pd2.clean_description || ' ') LIKE ('% ' || pp.clean_name || '') OR
-            (' ' || pd2.clean_description || ' ') LIKE ('' || pp.clean_name || ' %') OR
-            (' ' || pd2.clean_playlist_title || ' ') LIKE ('% ' || pp.clean_name || ' %') OR
-            (' ' || pd2.clean_playlist_title || ' ') LIKE ('% ' || pp.clean_name || '') OR
-            (' ' || pd2.clean_playlist_title || ' ') LIKE ('' || pp.clean_name || ' %') OR
-            -- Busca sem símbolos
-            (' ' || pd2.clean_title || ' ') LIKE ('% ' || pp.clean_no_symbols_name || ' %') OR
-            (' ' || pd2.clean_title || ' ') LIKE ('% ' || pp.clean_no_symbols_name || '') OR
-            (' ' || pd2.clean_title || ' ') LIKE ('' || pp.clean_no_symbols_name || ' %') OR
-            (' ' || pd2.clean_description || ' ') LIKE ('% ' || pp.clean_no_symbols_name || ' %') OR
-            (' ' || pd2.clean_description || ' ') LIKE ('% ' || pp.clean_no_symbols_name || '') OR
-            (' ' || pd2.clean_description || ' ') LIKE ('' || pp.clean_no_symbols_name || ' %') OR
-            -- Busca por nome abreviado
-            (pp.short_name IS NOT NULL AND LENGTH(pp.short_name) >= 4 AND (
-                (' ' || pd2.clean_title || ' ') LIKE ('% ' || pp.short_name || ' %') OR
-                (' ' || pd2.clean_title || ' ') LIKE ('% ' || pp.short_name || '') OR
-                (' ' || pd2.clean_title || ' ') LIKE ('' || pp.short_name || ' %') OR
-                (' ' || pd2.clean_description || ' ') LIKE ('% ' || pp.short_name || ' %') OR
-                (' ' || pd2.clean_description || ' ') LIKE ('% ' || pp.short_name || '') OR
-                (' ' || pd2.clean_description || ' ') LIKE ('' || pp.short_name || ' %')
-            ))
-        )
-    GROUP BY pd2.id_movie
+proplayer_top2 AS (
+    -- Pegar apenas Top1 e Top2 por vídeo
+    SELECT 
+        id_movie,
+        MAX(CASE WHEN proplayer_rank = 1 THEN id_proplayer END) as top1_id_proplayer,
+        MAX(CASE WHEN proplayer_rank = 1 THEN proplayer_name END) as top1_proplayer_name,
+        MAX(CASE WHEN proplayer_rank = 1 THEN proplayer_occurrence_count END) as top1_occurrences,
+        MAX(CASE WHEN proplayer_rank = 2 THEN id_proplayer END) as top2_id_proplayer,
+        MAX(CASE WHEN proplayer_rank = 2 THEN proplayer_name END) as top2_proplayer_name,
+        MAX(CASE WHEN proplayer_rank = 2 THEN proplayer_occurrence_count END) as top2_occurrences
+    FROM proplayer_ranking
+    WHERE proplayer_rank <= 2  -- Apenas top 2
+    GROUP BY id_movie
+),
+big_string_sem_proplayers AS (
+    -- Remover nomes de proplayers detectados da big_string
+    SELECT 
+        vd.id_movie,
+        vd.id_video,
+        vd.id_playlist,
+        vd.title,
+        vd.description,
+        vd.views,
+        vd.likes,
+        vd.title_playlist,
+        vd.id_youtube,
+        vd.dt_upload,
+        vd.version,
+        vd.keywords,
+        vd.heroi1,
+        vd.heroi2,
+        vd.x1_detectado,
+        vd.heroi_final,
+        pt2.top1_proplayer_name,
+        pt2.top2_proplayer_name,
+        -- Substituir big_string removendo os nomes de proplayers detectados (filtrar palavras)
+        TRIM(REGEXP_REPLACE(
+            COALESCE(
+                (SELECT string_agg(
+                    CASE 
+                        WHEN LENGTH(TRIM(palavra_individual)) >= 3 
+                             AND LOWER(TRIM(palavra_individual)) NOT IN (SELECT proplayer_name FROM nomes_proplayers)
+                        THEN TRIM(palavra_individual)
+                        ELSE NULL 
+                    END, ' '
+                ) FROM unnest(string_to_array(vd.big_string, ' ')) AS palavra_individual),
+                ''
+            ),
+            '\s+', ' ', 'g'
+        )) as big_string
+    FROM mvw_3_info_video_heroi vd
+    LEFT JOIN proplayer_top2 pt2 ON (vd.id_movie = pt2.id_movie)
 )
+-- SELECT final com colunas essenciais
 SELECT 
-    pd2.*,
-    -- Proplayer1 (compatibilidade com view anterior)
+    bsp.id_movie,
+    bsp.id_video,
+    bsp.id_playlist,
+    bsp.title,
+    bsp.description,
+    bsp.views,
+    bsp.likes,
+    bsp.title_playlist,
+    bsp.id_youtube,
+    bsp.dt_upload,
+    bsp.version,
+    -- Keywords já processadas
+    bsp.keywords,
+    -- Colunas de heróis vindas da view anterior
+    bsp.heroi1,
+    bsp.heroi2,
+    bsp.x1_detectado,
+    bsp.heroi_final,
+    -- Proplayer1 e Proplayer2
+    bsp.top1_proplayer_name as proplayer1,
+    bsp.top2_proplayer_name as proplayer2,
+    -- Proplayer final: lógica limpa baseada apenas na diferença percentual
     CASE 
-        WHEN pd2.confidence_score_proplayer_1 > 60 THEN pd2.detected_proplayer_1
-        ELSE NULL 
-    END as proplayer,
-    -- Proplayer1 e Proplayer2 com as regras solicitadas
-    CASE 
-        WHEN pd2.confidence_score_proplayer_1 > 60 THEN pd2.detected_proplayer_1
-        ELSE NULL 
-    END as proplayer1,
-    CASE 
-        WHEN pd2.confidence_score_2_second > 60 THEN pd2.detected_proplayer_2
-        ELSE NULL 
-    END as proplayer2,
-    -- Proplayer final baseado nas regras:
-    -- NULL se existirem 3 proplayers
-    -- O nome do proplayer se só existir 1
-    -- "x1" se existirem 2 proplayers
-    CASE 
-        WHEN COALESCE(pd3.has_third_proplayer, FALSE) = TRUE THEN NULL  -- 3 proplayers = NULL
-        WHEN pd2.confidence_score_2_second > 60 AND pd2.confidence_score_proplayer_1 > 60 THEN 'x1'  -- 2 proplayers = x1
-        WHEN pd2.confidence_score_proplayer_1 > 60 AND COALESCE(pd2.confidence_score_2_second, 0) <= 60 THEN pd2.detected_proplayer_1  -- 1 proplayer = nome do proplayer
-        ELSE NULL  -- Nenhum proplayer válido
-    END as proplayer_final
-FROM proplayer_detection_2 pd2
-LEFT JOIN proplayer_detection_3_check pd3 ON (pd2.id_movie = pd3.id_movie);
+        -- Se existe apenas proplayer1 (sem proplayer2), proplayer_final = proplayer1
+        WHEN bsp.top1_proplayer_name IS NOT NULL AND bsp.top2_proplayer_name IS NULL THEN 
+            bsp.top1_proplayer_name
+        -- Se existem proplayer1 e proplayer2, só definir proplayer_final se diferença >= 50%
+        WHEN bsp.top1_proplayer_name IS NOT NULL AND bsp.top2_proplayer_name IS NOT NULL THEN
+            CASE 
+                -- Calcular diferença percentual: (proplayer1 - proplayer2) / proplayer2 >= 0.5
+                WHEN pt2.top2_occurrences > 0 AND 
+                     (CAST(pt2.top1_occurrences - pt2.top2_occurrences AS FLOAT) / CAST(pt2.top2_occurrences AS FLOAT)) >= 0.5 
+                THEN bsp.top1_proplayer_name
+                -- Diferença < 50% = NULL (qualidade preservada)
+                ELSE NULL
+            END
+        -- Caso padrão: nenhum proplayer detectado
+        ELSE NULL
+    END as proplayer_final,
+    -- Big string já sem os nomes de proplayers detectados
+    bsp.big_string
+FROM big_string_sem_proplayers bsp
+LEFT JOIN proplayer_top2 pt2 ON (bsp.id_movie = pt2.id_movie);
