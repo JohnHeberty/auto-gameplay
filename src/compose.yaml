@@ -1,58 +1,58 @@
 services:
 
-  app:
-    container_name: auto-gameplay-app
-    build:
-      context: .
-    deploy:
-      resources:
-        limits:
-          memory: 2048M
-          cpus: "2"
-        reservations:
-          memory: 1024M
-          cpus: "1"
-    user: root
-    env_file:
-      - .env
-    environment:
-      - PYTHONPATH=/app
-      - OMP_NUM_THREADS=2
-      - OPENBLAS_NUM_THREADS=2
-      - MKL_NUM_THREADS=2
-    depends_on:
-      db:
-        condition: service_healthy
-    ports:
-      - 8000:8000
-    volumes:
-      - ./:/app
-      - ./data/DB/pgbackups:/backups
-    networks:
-      - auto-gameplay
+  # app:
+  #   container_name: auto-gameplay-app
+  #   build:
+  #     context: .
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 2048M
+  #         cpus: "2"
+  #       reservations:
+  #         memory: 1024M
+  #         cpus: "1"
+  #   user: root
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     - PYTHONPATH=/app
+  #     - OMP_NUM_THREADS=2
+  #     - OPENBLAS_NUM_THREADS=2
+  #     - MKL_NUM_THREADS=2
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   ports:
+  #     - 8000:8000
+  #   volumes:
+  #     - ./:/app
+  #     - ./data/DB/pgbackups:/backups
+  #   networks:
+  #     - auto-gameplay
 
-  pgadmin:
-    container_name: auto-gameplay-pgadmin4
-    image: dpage/pgadmin4
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_CONFIG_FILE_UPLOAD_MAX_MEMORY_SIZE: 52428800000  # 500MB
-      PGADMIN_SERVER_JSON_FILE: /pgadmin4/servers.json
-    depends_on:
-      db:
-        condition: service_healthy
-    ports:
-      - "5050:80"
-    volumes:
-      - pgadmin-data:/var/lib/pgadmin
-      - ./constants/server/servers.json:/pgadmin4/servers.json:ro
-    networks:
-      - auto-gameplay
+  # pgadmin:
+  #   container_name: auto-gameplay-pgadmin4
+  #   image: dpage/pgadmin4
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 128M
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@admin.com
+  #     PGADMIN_DEFAULT_PASSWORD: admin
+  #     PGADMIN_CONFIG_FILE_UPLOAD_MAX_MEMORY_SIZE: 52428800000  # 500MB
+  #     PGADMIN_SERVER_JSON_FILE: /pgadmin4/servers.json
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #   ports:
+  #     - "5050:80"
+  #   volumes:
+  #     - pgadmin-data:/var/lib/pgadmin
+  #     - ./constants/server/servers.json:/pgadmin4/servers.json:ro
+  #   networks:
+  #     - auto-gameplay
 
   db:
     container_name: auto-gameplay-db

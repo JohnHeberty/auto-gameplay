@@ -150,6 +150,10 @@ SELECT
               bsh.big_string LIKE '% vs. %' OR 
               bsh.big_string LIKE '% versus %' OR 
               bsh.big_string LIKE '% versus. %' OR 
+              bsh.big_string LIKE '% 1v1 %' OR 
+              bsh.big_string LIKE '% 1v1. %' OR 
+              bsh.big_string LIKE '% 1x1 %' OR
+              bsh.big_string LIKE '% 1x1. %' OR
               bsh.big_string LIKE '% x1. %' OR
               bsh.big_string LIKE '% x1 %')
         THEN TRUE
