@@ -5,7 +5,36 @@ from urllib.error import URLError, HTTPError
 import socket
 from datetime import datetime
 from typing import Optional
+import os
 
+proxys = {}
+if os.path.exists("proxies.txt"):
+    with open("proxies.txt", "r") as file:
+        proxys = [row.strip().split(":") for row in file.readlines()]
+        if proxys:
+            # proxy[0] : 23.95.150.145
+            # proxy[1] : 6114
+            # proxy[2] : qobuswsu
+            # proxy[3] : nd9ne57aazbx
+            proxys = [
+                {
+                    "http": f"http://{proxy[2]}:{proxy[3]}@{proxy[0]}:{proxy[1]}/",
+                    "https": f"http://{proxy[2]}:{proxy[3]}@{proxy[0]}:{proxy[1]}/",
+                    "live": True
+                }
+            for proxy in proxys
+            ]
+
+def next_proxie() -> None:
+    """Disable proxy settings"""
+    global proxys
+    if proxys:
+        choice_proxy = [(row, index) for row, index in zip(proxys, range(len(proxys))) if row.get("live", True)]
+        if choice_proxy:
+            _, index = choice_proxy[0]
+            proxys[index]["live"] = False
+            return True
+    return False
 
 def get_thumbnail_urls(video_id):
     """Generate thumbnail URLs for a YouTube video"""
@@ -42,7 +71,14 @@ def fetch_url(url, headers=None, timeout=5, method="GET", json_data=None):
             if "Content-Type" not in headers:
                 headers["Content-Type"] = "application/json"
 
-        req = Request(url, headers=headers, method=method, data=data)
+        if proxys:
+            choice_proxy = [row for row in proxys if row.get("live", True)]
+            if choice_proxy:
+                proxy = choice_proxy[0]
+                req = Request(url, headers=headers, method=method, data=data, proxies=proxy)
+            else:
+                req = Request(url, headers=headers, method=method, data=data)
+
         with urlopen(req, timeout=timeout) as response:
             return response.read().decode("utf-8", errors="ignore")
     except (URLError, HTTPError, socket.timeout):

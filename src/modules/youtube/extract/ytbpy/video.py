@@ -24,13 +24,11 @@ INNERTUBE_PAYLOAD_BASE: dict[str, Any] = {
 
 INNERTUBE_API_KEY = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8"
 
-
 def is_valid_video_id(video_id: str) -> bool:
     """Check if a string is a valid YouTube video ID"""
     if not video_id:
         return False
     return re.match(r"^[A-Za-z0-9_-]{11}$", video_id) is not None
-
 
 def extract_video_id(url_or_id: str) -> Optional[str]:
     """Extract YouTube video ID from URL or return ID if already provided"""
@@ -57,7 +55,6 @@ def extract_video_id(url_or_id: str) -> Optional[str]:
         return video_id if video_id and is_valid_video_id(video_id) else None
 
     return None
-
 
 def get_video_info(url_or_id: str, timeout: int = 5) -> Dict[str, Any]:
     """Get video information using YouTube's InnerTube API without an API key"""
@@ -216,7 +213,6 @@ def get_video_info(url_or_id: str, timeout: int = 5) -> Dict[str, Any]:
 
     return video_info
 
-
 def get_video_info_oembed(url_or_id: str, timeout: int = 5) -> Dict[str, Any]:
     """Alternative function to get video info using YouTube's API endpoints without API key"""
     video_id = extract_video_id(url_or_id)
@@ -244,7 +240,6 @@ def get_video_info_oembed(url_or_id: str, timeout: int = 5) -> Dict[str, Any]:
         pass
 
     return video_info
-
 
 def get_related_videos(url_or_id: str, timeout: int = 5) -> List[Dict[str, Any]]:
     """Get related videos for a YouTube video"""
