@@ -1,5 +1,5 @@
-CREATE TABLE IF NOT EXISTS PLAYLIST_MOVIE_HISTORIC (
-    ID_MOVIE INTEGER NOT NULL,
+CREATE TABLE IF NOT EXISTS PLAYLIST_MOVIE_HISTORIC_2 (
+    ID_MOVIE INTEGER UNIQUE NOT NULL,
     TITLE VARCHAR(100) NOT NULL,
     "description" VARCHAR(5000),
     VIEWS INTEGER,
@@ -11,13 +11,14 @@ CREATE TABLE IF NOT EXISTS PLAYLIST_MOVIE_HISTORIC (
     FAMILY_FRIENDLY BOOLEAN,
     DT_UPLOAD DATE,
     DT_PUBLISH DATE,
-    -- REGISTER_DATE TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    -- SYNCHRONIZED BOOLEAN DEFAULT TRUE,
-    DT_START DATE NOT NULL,
-    DT_END DATE,
+    REGISTER_DATE TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    SYNCHRONIZED BOOLEAN DEFAULT TRUE,
     CONSTRAINT fk_playlistmoviehistoric_movie FOREIGN KEY (ID_MOVIE) REFERENCES PLAYLIST_MOVIE(ID_MOVIE),
-    PRIMARY KEY (ID_MOVIE, DT_END)
+    PRIMARY KEY (ID_MOVIE)
 );
+
+ALTER TABLE PLAYLIST_MOVIE_HISTORIC 
+ADD CONSTRAINT unique_id_movie UNIQUE (ID_MOVIE);
 
 -- Comentários nas colunas
 COMMENT ON TABLE PLAYLIST_MOVIE_HISTORIC IS                         'Tabela para armazenar histórico de alterações e metadados dos vídeos das playlists';
@@ -33,8 +34,8 @@ COMMENT ON COLUMN PLAYLIST_MOVIE_HISTORIC.CATEGORY IS               'Categoria d
 COMMENT ON COLUMN PLAYLIST_MOVIE_HISTORIC.FAMILY_FRIENDLY IS        'Indica se o vídeo é adequado para toda a família';
 COMMENT ON COLUMN PLAYLIST_MOVIE_HISTORIC.DT_UPLOAD IS              'Data de upload do vídeo no YouTube';
 COMMENT ON COLUMN PLAYLIST_MOVIE_HISTORIC.DT_PUBLISH IS             'Data de publicação do vídeo no YouTube';
-COMMENT ON COLUMN PLAYLIST_MOVIE_HISTORIC.DT_START IS               'Data de início da vigência deste registro histórico';
-COMMENT ON COLUMN PLAYLIST_MOVIE_HISTORIC.DT_END IS                 'Data de fim da vigência deste registro histórico (parte da chave primária)';
+COMMENT ON COLUMN PLAYLIST_MOVIE_HISTORIC.REGISTER_DATE IS          'Data e hora do registro deste histórico';
+COMMENT ON COLUMN PLAYLIST_MOVIE_HISTORIC.SYNCHRONIZED IS           'Indica se o registro foi sincronizado com o YouTube';
 
 -- =====================================================================================
 -- ÍNDICES DE PERFORMANCE PARA PLAYLIST_MOVIE_HISTORIC
