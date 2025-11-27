@@ -1,4 +1,5 @@
 # 🎮 Auto-GamePlay: Plataforma de Automação para Conteúdo Gaming
+## Em Desenvolviemnto
 
 [![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
 [![Docker](https://img.shields.io/badge/Docker-20.10+-blue.svg)](https://www.docker.com/)
